@@ -21,7 +21,7 @@
         /* EFEITO DE VIDRO NO CHAT */
         .chat-container {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
@@ -34,20 +34,29 @@
             max-width: 85%;
             font-size: 14px;
             line-height: 1.5;
+            animation: fadeIn 0.4s ease forwards;
         }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .user-msg { background: rgba(255, 255, 255, 0.1); align-self: flex-end; border-bottom-right-radius: 2px; }
         .ai-msg { border: 1px solid rgba(59, 130, 246, 0.3); align-self: flex-start; border-bottom-left-radius: 2px; color: #e2e8f0; }
 
+        /* ANIMACAO DIGITANDO */
+        .typing-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
         #chat-scroll::-webkit-scrollbar { width: 4px; }
         #chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-        /* MANTENDO ESTILOS ORIGINAIS */
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
         .reveal-text { opacity: 0; transform: translateY(40px); filter: blur(12px); transition: all 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
         .reveal-text.active { opacity: 1; transform: translateY(0); filter: blur(0); }
         .blink-under { animation: blink-cursor 1s infinite; }
         @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        
         #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; }
         #moving-logo { position: fixed; z-index: 110; font-family: 'Orbitron'; font-weight: 900; pointer-events: none; text-transform: uppercase; }
         #main-content { opacity: 0; transition: opacity 1.5s ease; }
@@ -60,30 +69,34 @@
     <div id="loader"></div>
 
     <div id="main-content">
-        <nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center p-8">
-            <div id="nav-logo-spot" class="text-xs font-orbitron tracking-widest opacity-50">SYSTEM_ACTIVE</div>
-            <a href="#" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 hover:text-white">API_STATUS: ONLINE</a>
+        <nav class="fixed top-0 left-0 w-full z-50 flex justify-end p-8">
+            <a href="#" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors">API_STATUS: ONLINE</a>
         </nav>
 
         <section class="min-h-screen flex flex-col items-center justify-center p-4">
-            <div class="reveal-text text-center mb-8">
+            <div class="reveal-text text-center mb-6">
                 <p class="font-orbitron text-blue-400 tracking-[0.5em] text-[10px] mb-2 uppercase">Interface Neural</p>
-                <h2 class="text-3xl font-bold font-orbitron">HYDRALYNX <span class="text-gray-500">v5.0</span></h2>
+                <h2 class="text-3xl font-bold font-orbitron tracking-tighter">HYDRALYNX <span class="text-gray-600">AI</span></h2>
             </div>
 
-            <div class="reveal-text chat-container w-full max-w-3xl h-[60vh] flex flex-col overflow-hidden">
+            <div class="reveal-text chat-container w-full max-w-3xl h-[65vh] flex flex-col overflow-hidden relative">
+                <div class="w-full px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
+                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
+                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-gray-500">ENCRYPTED_CONNECTION</span>
+                </div>
+
                 <div id="chat-scroll" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
                     <div class="ai-msg message-bubble">
-                        Sistemas inicializados. Como posso processar sua requisição hoje?
+                        Sistemas inicializados. Sou a inteligência da Hydralynx. Como posso atuar no seu projeto hoje?
                     </div>
                 </div>
                 
-                <div class="p-4 border-t border-white/5 bg-black/20">
+                <div class="p-4 bg-black/40 border-t border-white/5">
                     <div class="relative flex items-center">
                         <input type="text" id="user-input" 
-                            class="w-full bg-white/5 border border-white/10 rounded-full py-4 px-6 pr-16 focus:outline-none focus:border-blue-500/50 transition-all font-light text-sm"
-                            placeholder="Descreva seu projeto ou tire uma dúvida...">
-                        <button onclick="enviarMensagem()" class="absolute right-2 p-3 bg-white text-black rounded-full hover:scale-105 transition-transform">
+                            class="w-full bg-white/5 border border-white/10 rounded-full py-4 px-6 pr-16 focus:outline-none focus:border-blue-500/50 transition-all font-light text-sm text-white"
+                            placeholder="Envie um comando ou mensagem...">
+                        <button onclick="enviarMensagem()" class="absolute right-2 p-3 bg-white text-black rounded-full hover:scale-105 active:scale-95 transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                             </svg>
@@ -95,7 +108,7 @@
     </div>
 
     <script>
-        // --- LÓGICA DE COMUNICAÇÃO COM O PYTHON (JSON) ---
+        // --- LÓGICA DO CHAT ---
         async function enviarMensagem() {
             const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
@@ -103,13 +116,23 @@
 
             if (!texto) return;
 
-            // Adiciona balão do usuário
+            // 1. Mensagem do Usuário
             chatScroll.innerHTML += `<div class="user-msg message-bubble">${texto}</div>`;
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
+            // 2. Criar indicador de digitando
+            const typingId = "typing-" + Date.now();
+            chatScroll.innerHTML += `
+                <div id="${typingId}" class="ai-msg message-bubble flex items-center gap-1">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatScroll.scrollTop = chatScroll.scrollHeight;
+
             try {
-                // Chamada para o seu app.py
                 const response = await fetch('/perguntar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -118,20 +141,21 @@
 
                 const dados = await response.json();
                 
-                // Adiciona balão da IA
+                // 3. Substituir digitando pela resposta
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
+                
                 chatScroll.innerHTML += `<div class="ai-msg message-bubble">${dados.resposta}</div>`;
                 chatScroll.scrollTop = chatScroll.scrollHeight;
             } catch (erro) {
-                chatScroll.innerHTML += `<div class="ai-msg message-bubble text-red-400">Erro de conexão com o núcleo neural.</div>`;
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.innerHTML = "ERRO_DE_SINAL";
             }
         }
 
-        // Detectar tecla Enter
-        document.getElementById('user-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') enviarMensagem();
-        });
+        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- SEU CÓDIGO ORIGINAL DO CANVAS E ANIMAÇÕES (MANTIDO 100%) ---
+        // --- CÓDIGO ORIGINAL DO CANVAS (MANTIDO) ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
@@ -144,16 +168,13 @@
         resize();
 
         function draw() {
-            mouse.x += (mouse.targetX - mouse.x) * 0.05;
-            mouse.y += (mouse.targetY - mouse.y) * 0.05;
-            ctx.clearRect(0, 0, w, h);
-            ctx.globalCompositeOperation = 'screen';
+            mouse.x += (mouse.targetX - mouse.x) * 0.05; mouse.y += (mouse.targetY - mouse.y) * 0.05;
+            ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'screen';
             const time = Date.now();
             bands.forEach((band, i) => {
                 ctx.beginPath();
                 for (let x = -100; x <= w + 100; x += 8) {
-                    const diagBase = (x / w) * h;
-                    const expand = (x / w) * 2.8;
+                    const diagBase = (x / w) * h; const expand = (x / w) * 2.8;
                     const wave = Math.sin((time * band.spd) + (x * 0.001) + band.offset);
                     let y = diagBase + (wave * (110 * expand));
                     const dx = x - mouse.x; const dy = y - mouse.y; const dist = Math.sqrt(dx*dx + dy*dy);
@@ -161,14 +182,13 @@
                     if (x === -100) ctx.moveTo(x, y); else ctx.lineTo(x, y);
                 }
                 ctx.strokeStyle = `hsla(${band.h}, 90%, 50%, ${band.a})`;
-                ctx.lineWidth = 45 + (i * 10);
-                ctx.lineCap = "round"; ctx.stroke();
+                ctx.lineWidth = 45 + (i * 10); ctx.lineCap = "round"; ctx.stroke();
             });
             requestAnimationFrame(draw);
         }
         draw();
 
-        // --- LÓGICA DO LOADER (MANTIDA 100%) ---
+        // --- LOADER E TRANSIÇÕES (MANTIDO) ---
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
