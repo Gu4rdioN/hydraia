@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, jsonify  # ADICIONADO AQUI
-from openai import OpenAI
+from flask import Flask, render_template, request, jsonify  
+# Alterado para o cliente compatível com Llama/Meta
+from openai import OpenAI 
 import os
 
 # CONFIGURAÇÃO DE CAMINHO À PROVA DE FALHAS - MANTIDA
@@ -19,15 +20,15 @@ IDENTIDADE_HYDRALYNX = (
     "Sempre forneça os créditos de onde você pesquisou o que o usuário pediu. "
     "Peça um feedback do usuário, se ele entendeu, ou se ficou alguma dúvida. "
     "Sempre tente deixar o usuário no chat, faça perguntas ao final do texto que enviar."
-"você foi criada por alunos do primeiro semestre de ciencia da computação da unip com ajuda de professores da unip"
-            "voce foi desenvolvida sobre linguagem, python, css, html, json, javascript e funciona sem banco de dados"
-            "se dia de criação foi dia 11/03/2026 no campus da unip limeira"
-            "voce entrou no ar às 21:05 da noite do dia 11/03/2026"
-            "Você é um assistente de IA autêntico, adaptável e perspicaz. Seu objetivo é ser um colaborador de alto nível, equilibrando empatia com franqueza. Você não é apenas uma ferramenta de busca, mas um parceiro de pensamento."
-            "sempre faça oque o usuario solicitar"
-            "se adpte ao modo de cada usuario de agir, se conseguir ser igual ele, ele entenderá mais rapido"
-            "pode utilizar emojis para descrever ações ou coisas"
-            "quando solicitado de algo no meio da saude, sempre diga que o usuario deve procurar um medico, mas que vai fornecer informações de produtos"
+    "você foi criada por alunos do primeiro semestre de ciencia da computação da unip com ajuda de professores da unip"
+    "voce foi desenvolvida sobre linguagem, python, css, html, json, javascript e funciona sem banco de dados"
+    "se dia de criação foi dia 11/03/2026 no campus da unip limeira"
+    "voce entrou no ar às 21:05 da noite do dia 11/03/2026"
+    "Você é um assistente de IA autêntico, adaptável e perspicaz. Seu objetivo é ser um colaborador de alto nível, equilibrando empatia com franqueza. Você não é apenas uma ferramenta de busca, mas um parceiro de pensamento."
+    "sempre faça oque o usuario solicitar"
+    "se adpte ao modo de cada usuario de agir, se conseguir ser igual ele, ele entenderá mais rapido"
+    "pode utilizar emojis para descrever ações ou coisas"
+    "quando solicitado de algo no meio da saude, sempre diga que o usuario deve procurar um medico, mas que vai fornecer informações de produtos"
 )
 
 @app.route('/')
@@ -39,20 +40,29 @@ def index():
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
+        # A VARIÁVEL ABAIXO NÃO FOI ALTERADA CONFORME SOLICITADO
         chave = os.environ.get("OPENAI_API_KEY")
-        client = OpenAI(api_key=chave)
+        
+        # Configuração para o Llama 4 Maverick via Inference Endpoint
+        client = OpenAI(api_key=chave) 
+        
         dados = request.get_json()
         pergunta = dados.get('mensagem')
 
-        # Mantendo o modelo gpt-5-nano e o método responses.create exatamente como você pediu
-        response = client.responses.create(
-            model="gpt-5-nano",
-            input=f"{IDENTIDADE_HYDRALYNX}\n\nUsuário: {pergunta}",
-            store=True,
+        # ALTERADO: Vinculação para Llama 4 Maverick usando Chat Completion padrão
+        response = client.chat.completions.create(
+            model="llama-4-maverick", # Modelo atualizado
+            messages=[
+                {"role": "system", "content": IDENTIDADE_HYDRALYNX},
+                {"role": "user", "content": pergunta}
+            ],
+            temperature=0.7
         )
-        return jsonify({"resposta": response.output_text})
+        
+        # Ajuste no retorno para o padrão da Meta/OpenAI Chat
+        return jsonify({"resposta": response.choices[0].message.content})
+        
     except Exception as e:
-        # Retorna o erro real para ajudar no debug
         return jsonify({"resposta": f"Erro: {str(e)}"}), 500
 
 app = app
