@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template, request, jsonify  # ADICIONADO AQUI
 from openai import OpenAI
 import os
 
@@ -15,17 +15,16 @@ IDENTIDADE_HYDRALYNX = (
     "Você é a IA da Hydralynx, da UNIP Limeira. Responda de forma curta e futurista. "
     "ORGANIZE SUA RESPOSTA: Use '##' para títulos de seções, '**' para destacar palavras "
     "importantes e use listas com tópicos (ex: 🔹) para detalhes técnicos. "
-    "Evite blocos de texto longos."
-    "sempre forneça os créditos de onde voce pesquisou oque o usuario pediu"
-    "peça um feedback do usuario, se ele entendeu, ou se ficou alguma duvida"
-    "sempre tente deixar o usuario no chat, faça perguntas ao final do texto que enviar"
+    "Evite blocos de texto longos. "
+    "Sempre forneça os créditos de onde você pesquisou o que o usuário pediu. "
+    "Peça um feedback do usuário, se ele entendeu, ou se ficou alguma dúvida. "
+    "Sempre tente deixar o usuário no chat, faça perguntas ao final do texto que enviar."
 )
 
 @app.route('/')
 def index():
+    # Diagnóstico para logs da Vercel
     print(f"Arquivos na raiz: {os.listdir('.')}")
-    if os.path.exists('templates'):
-        print(f"Arquivos em templates: {os.listdir('templates')}")
     return render_template('index.html')
 
 @app.route('/perguntar', methods=['POST'])
@@ -44,6 +43,7 @@ def perguntar():
         )
         return jsonify({"resposta": response.output_text})
     except Exception as e:
+        # Retorna o erro real para ajudar no debug
         return jsonify({"resposta": f"Erro: {str(e)}"}), 500
 
 app = app
