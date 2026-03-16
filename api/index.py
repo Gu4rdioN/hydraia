@@ -2,14 +2,14 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import os
 
-app = Flask(__name__, template_folder='../templates')
+# Pega o caminho absoluto da pasta onde o index.py está (api/)
+base_dir = os.path.dirname(os.path.abspath(__file__))
+# Sobe um nível e entra na pasta templates
+template_dir = os.path.join(base_dir, '..', 'templates')
 
-api_key_secret = os.environ.get("OPENAI_API_KEY")
+app = Flask(__name__, template_folder=template_dir)
 
-client = OpenAI(
-    api_key=api_key_secret
-)
-
+# --- IDENTIDADE ---
 IDENTIDADE_HYDRALYNX = (
     "Você é a IA da Hydralynx, um projeto desenvolvido exclusivamente para fins educativos "
     "pelos alunos da UNIP Limeira (Universidade Paulista). "
@@ -25,13 +25,22 @@ IDENTIDADE_HYDRALYNX = (
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        return f"Erro ao carregar o template: {str(e)}"
 
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
+        # Buscamos a chave dentro da função para evitar que o app morra se ela não existir
+        api_key_secret = os.environ.get("OPENAI_API_KEY")
+        
         if not api_key_secret:
-            return jsonify({"resposta": "ERRO: Chave de API não configurada nas variáveis de ambiente da Vercel."})
+            return jsonify({"resposta": "ERRO: Chave de API não configurada na Vercel."})
+
+        # Inicializamos o client aqui dentro
+        client = OpenAI(api_key=api_key_secret)
 
         dados = request.get_json()
         pergunta_usuario = dados.get('mensagem')
@@ -49,7 +58,7 @@ def perguntar():
         return jsonify({"resposta": texto_da_ia})
 
     except Exception as e:
-        print(f"Erro detectado: {e}")
-        return jsonify({"resposta": f"ERRO_DE_SISTEMA: O núcleo neural não respondeu. ({str(e)})"})
+        return jsonify({"resposta": f"ERRO_DE_SISTEMA: {str(e)}"})
 
+# Para a Vercel, o objeto exportado deve ser o app
 app = app
