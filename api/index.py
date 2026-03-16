@@ -2,19 +2,16 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import os
 
-# Configuração de pastas para a estrutura que você tem no GitHub (api/templates)
+# Forçando o Flask a achar a pasta templates dentro de /api
 app = Flask(__name__, template_folder='templates')
 
-# --- CONFIGURAÇÃO DA API ---
-# A chave deve estar nas Environment Variables da Vercel para segurança
+# Puxa a chave da Vercel
 api_key_secret = os.environ.get("OPENAI_API_KEY")
-client = OpenAI(api_key=api_key_secret)
 
-IDENTIDADE_HYDRALYNX = (
-    "Você é a IA da Hydralynx, da UNIP Limeira. "
-    "Se o usuário pedir uma imagem, crie um prompt detalhado em inglês para o DALL-E, "
-    "pois ele entende melhor descrições técnicas nessa língua."
-)
+# Inicializa o cliente apenas se a chave existir para não travar o app
+client = None
+if api_key_secret:
+    client = OpenAI(api_key=api_key_secret)
 
 @app.route('/')
 def index():
@@ -23,44 +20,40 @@ def index():
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
-        if not api_key_secret:
-            return jsonify({"resposta": "Erro: Chave de API não configurada na Vercel."})
+        if not client:
+            return jsonify({"resposta": "Erro: API Key não configurada na Vercel."})
 
         dados = request.get_json()
-        pergunta_usuario = dados.get('mensagem', '').lower()
+        pergunta = dados.get('mensagem', '').lower()
 
-        # LÓGICA DE DETECÇÃO: O usuário quer uma imagem?
-        palavras_chave_imagem = ["gere", "imagem", "foto", "desenhe", "crie uma imagem"]
-        quer_imagem = any(palavra in pergunta_usuario for palavra in palavras_chave_imagem)
-
-        if quer_imagem:
-            # 1. Gerar a imagem usando DALL-E 3
-            # O DALL-E 3 cria imagens fotorrealistas de alta qualidade
-            response_image = client.images.generate(
+        # Detecção de imagem
+        palavras_imagem = ["gere", "imagem", "foto", "desenhe", "crie"]
+        if any(p in pergunta for p in palavras_imagem):
+            # MOTOR DE IMAGEM (DALL-E 3)
+            response = client.images.generate(
                 model="dall-e-3",
-                prompt=f"Realistic high quality image of: {pergunta_usuario}. Cinematic lighting, 8k, detailed.",
-                size="1024x1024",
-                quality="standard",
+                prompt=f"Realistic cinematic photo of {pergunta}, 8k resolution",
                 n=1,
+                size="1024x1024"
             )
-            
-            url_imagem = response_image.data[0].url
-            
-            # Retornamos um HTML especial que o seu JavaScript vai renderizar
-            return jsonify({
-                "resposta": f"Hydralynx Gerador Ativo. Aqui está sua imagem:<br><img src='{url_imagem}' style='width:100%; border-radius:10px; margin-top:10px;'>"
-            })
+            url = response.data[0].url
+            return jsonify({"resposta": f"Processando imagem...<br><img src='{url}'>"})
 
-        # 2. Fluxo Normal de Texto (se não pediu imagem)
-        response = client.responses.create(
-            model="gpt-5-nano",
-            input=f"{IDENTIDADE_HYDRALYNX}\n\nUsuário: {pergunta_usuario}",
-            store=True,
+        # MOTOR DE TEXTO
+        # Usei o modelo 'gpt-3.5-turbo' por segurança, pois o 'gpt-5-nano' 
+        # pode ainda não estar liberado na sua conta específica da OpenAI
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Você é a IA da Hydralynx UNIP Limeira."},
+                {"role": "user", "content": pergunta}
+            ]
         )
-
-        return jsonify({"resposta": response.output_text})
+        return jsonify({"resposta": completion.choices[0].message.content})
 
     except Exception as e:
-        return jsonify({"resposta": f"ERRO_DE_SISTEMA: {str(e)}"})
+        # Esse print ajuda a ver o erro real nos Logs da Vercel
+        print(f"Erro Real: {e}")
+        return jsonify({"resposta": f"Erro no núcleo: {str(e)}"}), 500
 
 app = app
