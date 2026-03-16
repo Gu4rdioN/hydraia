@@ -2,35 +2,58 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI 
 import os
 
-app = Flask(__name__, template_folder='../templates', static_folder='../static')
+# CONFIGURAÇÃO DE CAMINHO PARA VERCEL
+app = Flask(__name__, 
+            template_folder='../templates', 
+            static_folder='../static')
 
-# IDENTIDADE DA HYDRALYNX (Mantida conforme sua solicitação)
+if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
+    app.template_folder = os.path.join(os.getcwd(), 'templates')
+
+# IDENTIDADE DA HYDRALYNX
 IDENTIDADE_HYDRALYNX = (
-    "Você é a IA da Hydralynx, da UNIP Limeira... (seu texto aqui)"
+    "Você é a IA da Hydralynx, da UNIP Limeira. Responda de forma curta e futurista. "
+    "ORGANIZE SUA RESPOSTA: Use '##' para títulos de seções, '**' para destacar palavras "
+    "importantes e use listas com tópicos (ex: 🔹) para detalhes técnicos. "
+    "Sempre forneça os créditos de onde você pesquisou o que o usuário pediu. "
+    "Você foi criada por alunos do 1º semestre de Ciência da Computação da UNIP Limeira no dia 11/03/2026. "
+    "Sempre tente deixar o usuário no chat, faça perguntas ao final do texto."
 )
+
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
-        # No OpenRouter, você precisa passar a URL base
+        # Puxa a chave automaticamente da configuração da Vercel
+        chave = os.environ.get("OPENAI_API_KEY")
+        
+        # Configuração para conectar ao OpenRouter usando a biblioteca OpenAI
         client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
-            api_key=os.environ.get("OPENROUTER_API_KEY"), # Sua chave do OpenRouter
+            api_key=chave
         )
         
         dados = request.get_json()
         pergunta = dados.get('mensagem')
 
-        # MODELO CORRIGIDO: Usando o Llama 3.1 8B (Estável e rápido no OpenRouter)
+        # Chamada da API usando o modelo DeepSeek
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.1-8b-instruct", 
+            model="deepseek/deepseek-chat", 
             messages=[
                 {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                 {"role": "user", "content": pergunta}
-            ]
+            ],
+            temperature=0.7
         )
         
         return jsonify({"resposta": response.choices[0].message.content})
         
     except Exception as e:
-        return jsonify({"resposta": f"Erro na Hydralynx: {str(e)}"}), 500
+        # Retorna o erro exato se algo falhar na comunicação
+        return jsonify({"resposta": f"Erro técnico: {str(e)}"}), 500
+
+# Exportação para a Vercel
+app = app
