@@ -6,6 +6,7 @@
     <title>Hydralynx AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body { background-color: #000000; color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; user-select: none; }
         
@@ -18,7 +19,6 @@
             opacity: 0.9;
         }
 
-        /* EFEITO DE VIDRO NO CHAT */
         .chat-container {
             background: rgba(255, 255, 255, 0.03);
             backdrop-filter: blur(25px);
@@ -37,12 +37,17 @@
             animation: fadeIn 0.4s ease forwards;
         }
 
+        /* AJUSTE PARA O MARKDOWN NÃO QUEBRAR O LAYOUT */
+        .ai-msg h2 { font-size: 1.25rem; font-weight: bold; color: #3b82f6; margin-top: 10px; margin-bottom: 5px; }
+        .ai-msg p { margin-bottom: 8px; }
+        .ai-msg ul { list-style-type: none; padding-left: 5px; }
+        .ai-msg strong { color: #fff; font-weight: 700; }
+
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .user-msg { background: rgba(255, 255, 255, 0.1); align-self: flex-end; border-bottom-right-radius: 2px; }
         .ai-msg { border: 1px solid rgba(59, 130, 246, 0.3); align-self: flex-start; border-bottom-left-radius: 2px; color: #e2e8f0; }
 
-        /* ANIMACAO DIGITANDO */
         .typing-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
@@ -108,7 +113,7 @@
     </div>
 
     <script>
-        // --- LÓGICA DO CHAT ---
+        // --- LÓGICA DO CHAT CORRIGIDA ---
         async function enviarMensagem() {
             const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
@@ -117,19 +122,25 @@
             if (!texto) return;
 
             // 1. Mensagem do Usuário
-            chatScroll.innerHTML += `<div class="user-msg message-bubble">${texto}</div>`;
+            const userDiv = document.createElement('div');
+            userDiv.className = "user-msg message-bubble";
+            userDiv.innerText = texto;
+            chatScroll.appendChild(userDiv);
+            
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
             // 2. Criar indicador de digitando
             const typingId = "typing-" + Date.now();
-            chatScroll.innerHTML += `
-                <div id="${typingId}" class="ai-msg message-bubble flex items-center gap-1">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
+            const typingDiv = document.createElement('div');
+            typingDiv.id = typingId;
+            typingDiv.className = "ai-msg message-bubble flex items-center gap-1";
+            typingDiv.innerHTML = `
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
             `;
+            chatScroll.appendChild(typingDiv);
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
             try {
@@ -141,11 +152,17 @@
 
                 const dados = await response.json();
                 
-                // 3. Substituir digitando pela resposta
+                // 3. Remover digitando e inserir resposta formatada
                 const typingEl = document.getElementById(typingId);
                 if (typingEl) typingEl.remove();
                 
-                chatScroll.innerHTML += `<div class="ai-msg message-bubble">${dados.resposta}</div>`;
+                const aiDiv = document.createElement('div');
+                aiDiv.className = "ai-msg message-bubble";
+                
+                // A MÁGICA ESTÁ AQUI: marked.parse() transforma Markdown em HTML real
+                aiDiv.innerHTML = marked.parse(dados.resposta);
+                
+                chatScroll.appendChild(aiDiv);
                 chatScroll.scrollTop = chatScroll.scrollHeight;
             } catch (erro) {
                 const typingEl = document.getElementById(typingId);
@@ -155,7 +172,7 @@
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- CÓDIGO ORIGINAL DO CANVAS (MANTIDO) ---
+        // --- CÓDIGO DO CANVAS ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
@@ -188,7 +205,7 @@
         }
         draw();
 
-        // --- LOADER E TRANSIÇÕES (MANTIDO) ---
+        // --- LOADER E TRANSIÇÕES ---
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
