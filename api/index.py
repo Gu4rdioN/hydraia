@@ -2,56 +2,47 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import os
 
-# CONFIGURAÇÃO DE CAMINHO ABSOLUTO
-# Isso pega a pasta atual (api), sobe um nível e acha a pasta 'templates'
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-template_dir = os.path.join(base_dir, 'templates')
+# CONFIGURAÇÃO DE DIRETÓRIOS ABSOLUTOS
+# Isso resolve o erro 500 de "TemplateNotFound" ou caminhos errados
+path_diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+path_projeto_raiz = os.path.dirname(path_diretorio_atual)
+path_templates = os.path.join(path_projeto_raiz, 'templates')
 
-app = Flask(__name__, template_folder=template_dir)
+app = Flask(__name__, template_folder=path_templates)
 
-# --- IDENTIDADE ---
 IDENTIDADE_HYDRALYNX = (
-    "Você é a IA da Hydralynx, um projeto desenvolvido exclusivamente para fins educativos "
-    "pelos alunos da UNIP Limeira (Universidade Paulista). "
-    "Sua missão é demonstrar o poder da integração entre Python, Flask e Inteligência Artificial. "
-    "Regras de Identidade: "
-    "1. Se perguntarem 'Quem é você?', responda: 'Sou a IA da Hydralynx, um projeto educacional "
-    "da UNIP Limeira focado em inovação e desenvolvimento de sistemas.' "
-    "2. Se perguntarem 'De onde você veio?' ou 'Quem te criou?', mencione que você nasceu nos "
-    "laboratórios de tecnologia da UNIP Limeira em 2026. "
-    "3. Se perguntarem sobre o criador, diga que você faz parte do ecossistema Hydralynx e UNIP. "
-    "4. Mantenha um tom acadêmico, porém futurista."
+    "Você é a IA da Hydralynx, desenvolvida para fins educativos pelos alunos da UNIP Limeira. "
+    "Responda sempre como a inteligência oficial da Hydralynx."
 )
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    try:
+        return render_template('index.html')
+    except Exception as e:
+        # Se der erro aqui, ele vai imprimir exatamente o que falta
+        return f"Erro de Inicialização: {str(e)}", 500
 
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
-        api_key_secret = os.environ.get("OPENAI_API_KEY")
-        if not api_key_secret:
-            return jsonify({"resposta": "ERRO: Chave de API não configurada na Vercel."})
+        chave = os.environ.get("OPENAI_API_KEY")
+        if not chave:
+            return jsonify({"resposta": "Chave de API não configurada na Vercel."}), 500
 
-        client = OpenAI(api_key=api_key_secret)
+        client = OpenAI(api_key=chave)
         dados = request.get_json()
-        pergunta_usuario = dados.get('mensagem')
+        pergunta = dados.get('mensagem')
 
-        if not pergunta_usuario:
-            return jsonify({"resposta": "Mensagem vazia recebida."})
-
-        # Chamada ao modelo gpt-5-nano (ou o que estiver disponível na sua conta)
         response = client.responses.create(
             model="gpt-5-nano",
-            input=f"{IDENTIDADE_HYDRALYNX}\n\nUsuário: {pergunta_usuario}",
+            input=f"{IDENTIDADE_HYDRALYNX}\n\nUsuário: {pergunta}",
             store=True,
         )
 
-        texto_da_ia = response.output_text
-        return jsonify({"resposta": texto_da_ia})
-
+        return jsonify({"resposta": response.output_text})
     except Exception as e:
-        return jsonify({"resposta": f"ERRO_DE_SISTEMA: {str(e)}"})
+        return jsonify({"resposta": f"Erro Neural: {str(e)}"}), 500
 
+# Necessário para Vercel
 app = app
