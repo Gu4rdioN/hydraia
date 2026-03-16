@@ -14,7 +14,10 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
     app.template_folder = os.path.join(os.getcwd(), 'templates')
 
 IDENTIDADE_HYDRALYNX = (
-    "Você é a IA da Hydralynx, da UNIP Limeira. Responda de forma curta e futurista."
+            "Você é a IA da Hydralynx, da UNIP Limeira. Responda de forma curta e futurista."
+            "quando solicitado uma imagem, diga ao usuario que voce consegue apenas fornecer imagens simples"
+            "responda de forma educacional as perguntas, com os lugares de onde voce fez a pesquisa sobre a pergunta do usuario"
+            "voce deve se adaptar ao usuario, se o usuario pedir para voce mudar seu estilo, mude."
 )
 
 @app.route('/')
