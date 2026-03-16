@@ -2,58 +2,45 @@ from flask import Flask, render_template, request, jsonify
 from openai import OpenAI
 import os
 
-# Forçando o Flask a achar a pasta templates dentro de /api
-app = Flask(__name__, template_folder='templates')
+# CONFIGURAÇÃO DE CAMINHO À PROVA DE FALHAS
+# Isso força o Flask a olhar para a raiz do projeto (onde a Vercel monta o build)
+app = Flask(__name__, 
+            template_folder='../templates', 
+            static_folder='../static')
 
-# Puxa a chave da Vercel
-api_key_secret = os.environ.get("OPENAI_API_KEY")
+# TENTATIVA DE MAPEAR O CAMINHO REAL SE O DE CIMA FALHAR
+if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
+    # Se estiver rodando dentro da Vercel, às vezes o caminho raiz é o atual
+    app.template_folder = os.path.join(os.getcwd(), 'templates')
 
-# Inicializa o cliente apenas se a chave existir para não travar o app
-client = None
-if api_key_secret:
-    client = OpenAI(api_key=api_key_secret)
+IDENTIDADE_HYDRALYNX = (
+    "Você é a IA da Hydralynx, da UNIP Limeira. Responda de forma curta e futurista."
+)
 
 @app.route('/')
 def index():
+    # Teste de diagnóstico: lista os arquivos para você ver no log se a pasta existe
+    print(f"Arquivos na raiz: {os.listdir('.')}")
+    if os.path.exists('templates'):
+        print(f"Arquivos em templates: {os.listdir('templates')}")
+        
     return render_template('index.html')
 
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
-        if not client:
-            return jsonify({"resposta": "Erro: API Key não configurada na Vercel."})
-
+        chave = os.environ.get("OPENAI_API_KEY")
+        client = OpenAI(api_key=chave)
         dados = request.get_json()
-        pergunta = dados.get('mensagem', '').lower()
+        pergunta = dados.get('mensagem')
 
-        # Detecção de imagem
-        palavras_imagem = ["gere", "imagem", "foto", "desenhe", "crie"]
-        if any(p in pergunta for p in palavras_imagem):
-            # MOTOR DE IMAGEM (DALL-E 3)
-            response = client.images.generate(
-                model="dall-e-3",
-                prompt=f"Realistic cinematic photo of {pergunta}, 8k resolution",
-                n=1,
-                size="1024x1024"
-            )
-            url = response.data[0].url
-            return jsonify({"resposta": f"Processando imagem...<br><img src='{url}'>"})
-
-        # MOTOR DE TEXTO
-        # Usei o modelo 'gpt-3.5-turbo' por segurança, pois o 'gpt-5-nano' 
-        # pode ainda não estar liberado na sua conta específica da OpenAI
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "Você é a IA da Hydralynx UNIP Limeira."},
-                {"role": "user", "content": pergunta}
-            ]
+        response = client.responses.create(
+            model="gpt-5-nano",
+            input=f"{IDENTIDADE_HYDRALYNX}\n\nUsuário: {pergunta}",
+            store=True,
         )
-        return jsonify({"resposta": completion.choices[0].message.content})
-
+        return jsonify({"resposta": response.output_text})
     except Exception as e:
-        # Esse print ajuda a ver o erro real nos Logs da Vercel
-        print(f"Erro Real: {e}")
-        return jsonify({"resposta": f"Erro no núcleo: {str(e)}"}), 500
+        return jsonify({"resposta": f"Erro: {str(e)}"}), 500
 
 app = app
