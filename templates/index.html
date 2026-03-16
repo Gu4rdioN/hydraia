@@ -3,240 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hydralynx AI - UNIP Limeira</title>
+    <title>Hydralynx AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #00d2ff;
-            --secondary: #3a7bd5;
-            --bg: #0f0f12;
-            --text: #ffffff;
-            --icon-idle: #555; /* Cor do ícone quando parado */
-            --icon-active: #00d2ff; /* Cor do ícone quando ativo */
+        body { background-color: #000000; color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; user-select: none; }
+        
+        #spectrum-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            filter: blur(12px);
+            opacity: 0.9;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
+        .chat-container {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
-        header {
-            padding: 20px;
-            text-align: center;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-        }
-
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .message {
-            max-width: 80%;
+        .message-bubble {
             padding: 12px 18px;
             border-radius: 15px;
+            margin-bottom: 10px;
+            max-width: 85%;
+            font-size: 14px;
             line-height: 1.5;
-            word-wrap: break-word;
+            animation: fadeIn 0.4s ease forwards;
         }
 
-        .user-message {
-            align-self: flex-end;
-            background: var(--secondary);
-            border-bottom-right-radius: 2px;
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .ia-message {
-            align-self: flex-start;
-            background: #2a2a30;
-            border-bottom-left-radius: 2px;
-            border: 1px solid #444;
-        }
+        .user-msg { background: rgba(255, 255, 255, 0.1); align-self: flex-end; border-bottom-right-radius: 2px; }
+        .ai-msg { border: 1px solid rgba(59, 130, 246, 0.3); align-self: flex-start; border-bottom-left-radius: 2px; color: #e2e8f0; }
 
-        /* --- Estilo da Área de Input e Ícone --- */
-        #input-area-container {
-            background: #1a1a1f;
-            display: flex;
-            align-items: center; /* Alinha o ícone verticalmente */
-            padding: 0 20px;
-        }
+        .typing-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
 
-        #input-area {
-            flex: 1;
-            padding: 20px 0;
-            display: flex;
-            gap: 10px;
-        }
+        #chat-scroll::-webkit-scrollbar { width: 4px; }
+        #chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #000;
-            color: #fff;
-            outline: none;
-        }
-
-        button {
-            padding: 12px 25px;
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        button:hover {
-            opacity: 0.8;
-        }
-
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-
-        /* Estilo para a imagem gerada */
-        img {
-            max-width: 100%;
-            border-radius: 10px;
-            margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-        }
-
-        /* --- ESTILO DO ÍCONE SVG MINIMALISTA --- */
-        .image-engine-icon-container {
-            width: 30px;
-            height: 30px;
-            margin-left: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .image-engine-icon-container svg {
-            width: 100%;
-            height: 100%;
-            fill: var(--icon-idle); /* Cor padrão (cinza) */
-            transition: fill 0.5s ease, transform 0.3s ease;
-        }
-
-        /* Estado ativo do ícone (quando detecta imagem) */
-        .image-engine-icon-container.active svg {
-            fill: var(--icon-active); /* Cor ativa (azul neon) */
-            transform: scale(1.1); /* Pequeno aumento */
-            filter: drop-shadow(0 0 5px var(--icon-active)); /* Brilho neon */
-        }
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+        .reveal-text { opacity: 0; transform: translateY(40px); filter: blur(12px); transition: all 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
+        .reveal-text.active { opacity: 1; transform: translateY(0); filter: blur(0); }
+        .blink-under { animation: blink-cursor 1s infinite; }
+        @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        
+        #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; }
+        #moving-logo { position: fixed; z-index: 110; font-family: 'Orbitron'; font-weight: 900; pointer-events: none; text-transform: uppercase; }
+        #main-content { opacity: 0; transition: opacity 1.5s ease; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h2 style="margin:0;">HYDRALYNX AI</h2>
-        <small>UNIP LIMEIRA - PROJETO EDUCACIONAL 2026</small>
-    </header>
+    <canvas id="spectrum-canvas"></canvas>
+    <div id="moving-logo"><span id="type-target"></span><span class="blink-under">|</span></div>
+    <div id="loader"></div>
 
-    <div id="chat-container">
-        <div class="message ia-message">
-            Olá! Sou a Hydralynx. Posso conversar com você ou gerar imagens incríveis. O que deseja criar agora?
-        </div>
-    </div>
+    <div id="main-content">
+        <nav class="fixed top-0 left-0 w-full z-50 flex justify-end p-8">
+            <a href="#" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors">API_STATUS: ONLINE</a>
+        </nav>
 
-    <div id="input-area-container">
-        <div id="input-area">
-            <input type="text" id="user-input" placeholder="Digite sua mensagem ou peça uma imagem..." onkeypress="handleKey(event)">
-            <button id="send-btn" onclick="enviar()">Enviar</button>
-        </div>
-        
-        <div class="image-engine-icon-container" id="image-icon-container" title="Motor de Imagem (Inativo)">
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4ZM4 6V18H20V6H4ZM12 16C9.79 16 8 14.21 8 12C8 9.79 9.79 8 12 8C14.21 8 16 9.79 16 12C16 14.21 14.21 16 12 16ZM12 10C10.9 10 10 10.9 10 12C10 13.1 10.9 14 12 14C13.1 14 14 13.1 14 12C14 10.9 13.1 10 12 10Z"/>
-            </svg>
-        </div>
+        <section class="min-h-screen flex flex-col items-center justify-center p-4">
+            <div class="reveal-text text-center mb-6">
+                <p class="font-orbitron text-blue-400 tracking-[0.5em] text-[10px] mb-2 uppercase">Interface Neural</p>
+                <h2 class="text-3xl font-bold font-orbitron tracking-tighter">HYDRALYNX <span class="text-gray-600">AI</span></h2>
+            </div>
+
+            <div class="reveal-text chat-container w-full max-w-3xl h-[65vh] flex flex-col overflow-hidden relative">
+                <div class="w-full px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
+                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
+                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-gray-500">ENCRYPTED_CONNECTION</span>
+                </div>
+
+                <div id="chat-scroll" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+                    <div class="ai-msg message-bubble">
+                        Sistemas inicializados. Sou a inteligência da Hydralynx. Como posso atuar no seu projeto hoje?
+                    </div>
+                </div>
+                
+                <div class="p-4 bg-black/40 border-t border-white/5">
+                    <div class="relative flex items-center">
+                        <input type="text" id="user-input" 
+                            class="w-full bg-white/5 border border-white/10 rounded-full py-4 px-6 pr-16 focus:outline-none focus:border-blue-500/50 transition-all font-light text-sm text-white"
+                            placeholder="Envie um comando ou mensagem...">
+                        <button onclick="enviarMensagem()" class="absolute right-2 p-3 bg-white text-black rounded-full hover:scale-105 active:scale-95 transition-all">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const imageIconContainer = document.getElementById('image-icon-container');
+        async function enviarMensagem() {
+            const input = document.getElementById('user-input');
+            const chatScroll = document.getElementById('chat-scroll');
+            const texto = input.value.trim();
 
-        function appendMessage(role, text) {
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${role === 'user' ? 'user-message' : 'ia-message'}`;
-            msgDiv.innerHTML = text; 
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+            if (!texto) return;
 
-        async function enviar() {
-            const mensagem = userInput.value.trim();
-            if (!mensagem) return;
+            chatScroll.innerHTML += `<div class="user-msg message-bubble">${texto}</div>`;
+            input.value = '';
+            chatScroll.scrollTop = chatScroll.scrollHeight;
 
-            // --- LÓGICA DE DETECÇÃO ---
-            // Palavras-chave idênticas às do Python
-            const palavrasChave = ["gere", "imagem", "foto", "desenhe", "crie uma imagem"];
-            const querImagem = palavrasChave.some(palavra => mensagem.toLowerCase().includes(palavra));
-
-            // Ativa o ícone minimalista se for um pedido de imagem
-            if (querImagem) {
-                imageIconContainer.classList.add('active');
-                imageIconContainer.title = "Motor de Imagem (Ativo)";
-            } else {
-                imageIconContainer.classList.remove('active');
-                imageIconContainer.title = "Motor de Imagem (Inativo)";
-            }
-
-            // Desativa botão e limpa input
-            appendMessage('user', mensagem);
-            userInput.value = '';
-            userInput.disabled = true;
-            sendBtn.disabled = true;
-
-            // Mensagem de "pensando"
-            const loadingMsg = document.createElement('div');
-            loadingMsg.className = 'message ia-message';
-            loadingMsg.innerText = querImagem ? 'Hydralynx Gerando Imagem Realista (isso pode levar alguns segundos)...' : 'Hydralynx processando...';
-            chatContainer.appendChild(loadingMsg);
+            const typingId = "typing-" + Date.now();
+            chatScroll.innerHTML += `
+                <div id="${typingId}" class="ai-msg message-bubble flex items-center gap-1">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            chatScroll.scrollTop = chatScroll.scrollHeight;
 
             try {
                 const response = await fetch('/perguntar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mensagem: mensagem })
+                    body: JSON.stringify({ "mensagem": texto })
                 });
 
-                const data = await response.json();
+                const dados = await response.json();
                 
-                chatContainer.removeChild(loadingMsg);
-                appendMessage('ia', data.resposta);
-
-            } catch (error) {
-                chatContainer.removeChild(loadingMsg);
-                appendMessage('ia', 'ERRO: O sistema falhou ao conectar com o núcleo.');
-            } finally {
-                // --- DESATIVA O ÍCONE ---
-                // imageIconContainer.classList.remove('active'); // Opcional: desativar ao final
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.remove();
                 
-                userInput.disabled = false;
-                sendBtn.disabled = false;
-                userInput.focus();
+                chatScroll.innerHTML += `<div class="ai-msg message-bubble">${dados.resposta}</div>`;
+                chatScroll.scrollTop = chatScroll.scrollHeight;
+            } catch (erro) {
+                const typingEl = document.getElementById(typingId);
+                if (typingEl) typingEl.innerHTML = "ERRO_DE_SINAL";
             }
         }
 
-        function handleKey(e) {
-            if (e.key === 'Enter') enviar();
+        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
+
+        const canvas = document.getElementById('spectrum-canvas');
+        const ctx = canvas.getContext('2d');
+        let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
+        const colors = [{ h: 0, a: 0.15 }, { h: 30, a: 0.15 }, { h: 60, a: 0.15 }, { h: 140, a: 0.15 }, { h: 200, a: 0.15 }, { h: 270, a: 0.15 }, { h: 320, a: 0.15 }];
+        let bands = colors.map((c, i) => ({ ...c, offset: i * 0.8, spd: 0.0006 + (i * 0.0001) }));
+
+        function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+        window.addEventListener('mousemove', (e) => { mouse.targetX = e.clientX; mouse.targetY = e.clientY; });
+        window.addEventListener('resize', resize);
+        resize();
+
+        function draw() {
+            mouse.x += (mouse.targetX - mouse.x) * 0.05; mouse.y += (mouse.targetY - mouse.y) * 0.05;
+            ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'screen';
+            const time = Date.now();
+            bands.forEach((band, i) => {
+                ctx.beginPath();
+                for (let x = -100; x <= w + 100; x += 8) {
+                    const diagBase = (x / w) * h; const expand = (x / w) * 2.8;
+                    const wave = Math.sin((time * band.spd) + (x * 0.001) + band.offset);
+                    let y = diagBase + (wave * (110 * expand));
+                    const dx = x - mouse.x; const dy = y - mouse.y; const dist = Math.sqrt(dx*dx + dy*dy);
+                    if (dist < 400) { const force = Math.pow(1 - dist / 400, 2); y += (dy / dist) * (force * 90); }
+                    if (x === -100) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                }
+                ctx.strokeStyle = `hsla(${band.h}, 90%, 50%, ${band.a})`;
+                ctx.lineWidth = 45 + (i * 10); ctx.lineCap = "round"; ctx.stroke();
+            });
+            requestAnimationFrame(draw);
         }
+        draw();
+
+        const typeTarget = document.getElementById('type-target');
+        const movingLogo = document.getElementById('moving-logo');
+        const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
+        let curTxt = "", isDelPhr = false, curPhrIdx = 0;
+
+        window.onload = () => {
+            movingLogo.style.left = "50%"; movingLogo.style.top = "50%"; movingLogo.style.transform = "translate(-50%, -50%) scale(2.5)";
+            setTimeout(typeInit, 1000);
+        };
+
+        function typeInit() {
+            const target = phrases[0];
+            if (curTxt.length < target.length) {
+                curTxt = target.substring(0, curTxt.length + 1);
+                typeTarget.innerText = curTxt;
+                setTimeout(typeInit, 100);
+            } else {
+                movingLogo.style.transition = "all 1.5s cubic-bezier(0.85, 0, 0.15, 1)";
+                movingLogo.style.left = "2rem"; movingLogo.style.top = "2rem"; movingLogo.style.transform = "scale(1)";
+                document.getElementById('loader').style.opacity = "0";
+                document.getElementById('main-content').style.opacity = "1";
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = "none";
+                    loopPhrases();
+                }, 1200);
+            }
+        }
+
+        function loopPhrases() {
+            const full = phrases[curPhrIdx];
+            curTxt = isDelPhr ? full.substring(0, curTxt.length - 1) : full.substring(0, curTxt.length + 1);
+            typeTarget.innerText = curTxt;
+            let spd = isDelPhr ? 50 : 150;
+            if (!isDelPhr && curTxt === full) { spd = 2000; isDelPhr = true; }
+            else if (isDelPhr && curTxt === "<") { isDelPhr = false; curPhrIdx = (curPhrIdx + 1) % phrases.length; spd = 500; }
+            setTimeout(loopPhrases, spd);
+        }
+
+        const obs = new IntersectionObserver((es) => es.forEach(e => e.isIntersecting && e.target.classList.add('active')), { threshold: 0.1 });
+        document.querySelectorAll('.reveal-text').forEach(el => obs.observe(el));
     </script>
 </body>
 </html>
