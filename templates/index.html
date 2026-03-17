@@ -126,16 +126,12 @@
     </div>
 
     <script>
-        // Variável GLOBAL para garantir que o enviarMensagem consiga ler
         window.iaSelecionada = 'GLM'; 
 
         function setIA(tipo) {
             window.iaSelecionada = tipo;
             const btnGLM = document.getElementById('btn-glm');
             const btnNV = document.getElementById('btn-nv');
-
-            console.log("Alternando IA para:", tipo);
-
             if (tipo === 'GLM') {
                 btnGLM.classList.add('active', 'active-glm');
                 btnNV.classList.remove('active', 'active-nv');
@@ -152,8 +148,7 @@
 
             if (!texto) return;
 
-            console.log("Enviando requisição com IA:", window.iaSelecionada);
-
+            // Interface do Usuário
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
             userDiv.innerText = texto;
@@ -161,6 +156,7 @@
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
+            // Efeito Digitando inicial
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = typingId;
@@ -179,25 +175,48 @@
                     })
                 });
 
-                const dados = await response.json();
-                document.getElementById(typingId).remove();
-                
-                const aiDiv = document.createElement('div');
-                aiDiv.className = "ai-msg message-bubble";
-                aiDiv.innerHTML = marked.parse(dados.resposta);
-                
-                chatScroll.appendChild(aiDiv);
-                chatScroll.scrollTop = chatScroll.scrollHeight;
+                // LÓGICA DE STREAMING NO FRONT-END
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let fullText = "";
+                let aiDiv = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    // Remove o "digitando" assim que o primeiro pedaço de texto chega
+                    if (document.getElementById(typingId)) {
+                        document.getElementById(typingId).remove();
+                    }
+
+                    // Cria a bolha da IA se ainda não existir
+                    if (!aiDiv) {
+                        aiDiv = document.createElement('div');
+                        aiDiv.className = "ai-msg message-bubble";
+                        chatScroll.appendChild(aiDiv);
+                    }
+
+                    // Decodifica o pedaço de texto e adiciona ao conteúdo
+                    const chunk = decoder.decode(value, { stream: true });
+                    fullText += chunk;
+                    
+                    // Renderiza o Markdown em tempo real
+                    aiDiv.innerHTML = marked.parse(fullText);
+                    chatScroll.scrollTop = chatScroll.scrollHeight;
+                }
+
             } catch (erro) {
-                console.error("Erro na requisição:", erro);
-                const typingEl = document.getElementById(typingId);
-                if (typingEl) typingEl.innerHTML = "ERRO_DE_CONEXÃO";
+                console.error("Erro na matriz:", erro);
+                if (document.getElementById(typingId)) {
+                    document.getElementById(typingId).innerHTML = "ERRO_DE_CONEXÃO";
+                }
             }
         }
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // Lógica visual do Canvas e Loader (Mantida conforme original)
+        // --- Resto da lógica visual (Canvas/Logo) mantida ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
