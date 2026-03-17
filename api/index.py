@@ -43,7 +43,7 @@ def perguntar():
                 {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                 {"role": "user", "content": pergunta}
             ],
-            temperature=0.6 
+            temperature=0.3
         )
         
         return jsonify({"resposta": response.choices[0].message.content})
