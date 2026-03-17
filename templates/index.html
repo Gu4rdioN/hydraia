@@ -37,6 +37,17 @@
             animation: fadeIn 0.4s ease forwards;
         }
 
+        /* --- NOVOS ESTILOS PARA AS SIGLAS --- */
+        .ia-badge {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 9px;
+            margin-left: 8px;
+            transition: all 0.3s ease;
+        }
+        .badge-nv { background: #76b900; color: #000; } /* Verde Nvidia */
+        .badge-glm { background: #3b82f6; color: #fff; } /* Azul GLM */
 
         .ai-msg h2 { font-size: 1.25rem; font-weight: bold; color: #3b82f6; margin-top: 10px; margin-bottom: 5px; }
         .ai-msg p { margin-bottom: 8px; }
@@ -86,7 +97,12 @@
 
             <div class="reveal-text chat-container w-full max-w-3xl h-[65vh] flex flex-col overflow-hidden relative">
                 <div class="w-full px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
-                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
+                    <div class="flex items-center">
+                        <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
+                        <span id="ia-badge-container" class="hidden">
+                            <span id="ia-type-label" class="ia-badge"></span>
+                        </span>
+                    </div>
                     <span class="text-[9px] font-orbitron tracking-[0.3em] text-gray-500">ENCRYPTED_CONNECTION</span>
                 </div>
 
@@ -113,14 +129,14 @@
     </div>
 
     <script>
-
         async function enviarMensagem() {
             const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
+            const iaContainer = document.getElementById('ia-badge-container');
+            const iaLabel = document.getElementById('ia-type-label');
             const texto = input.value.trim();
 
             if (!texto) return;
-
 
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
@@ -129,7 +145,6 @@
             
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
-
 
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
@@ -152,14 +167,21 @@
 
                 const dados = await response.json();
                 
+                // --- LÓGICA DA SIGLA DA IA ---
+                iaContainer.classList.remove('hidden');
+                if (dados.modelo.toLowerCase().includes('nvidia')) {
+                    iaLabel.innerText = "NV";
+                    iaLabel.className = "ia-badge badge-nv";
+                } else {
+                    iaLabel.innerText = "GLM";
+                    iaLabel.className = "ia-badge badge-glm";
+                }
 
                 const typingEl = document.getElementById(typingId);
                 if (typingEl) typingEl.remove();
                 
                 const aiDiv = document.createElement('div');
                 aiDiv.className = "ai-msg message-bubble";
-                
-
                 aiDiv.innerHTML = marked.parse(dados.resposta);
                 
                 chatScroll.appendChild(aiDiv);
@@ -171,7 +193,6 @@
         }
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
-
 
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
@@ -204,7 +225,6 @@
             requestAnimationFrame(draw);
         }
         draw();
-
 
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
