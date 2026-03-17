@@ -43,7 +43,7 @@ def perguntar():
 
 
         response = client.chat.completions.create(
-            model="google/gemma-3-27b-it", 
+            model="anthropic/claude-sonnet-4.6", 
             messages=[
                 {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                 {"role": "user", "content": pergunta}
