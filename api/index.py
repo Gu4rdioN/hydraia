@@ -1,11 +1,11 @@
 from flask import Flask, render_template, request, Response, stream_with_context
-from openai import OpenAI 
+from openai import OpenAI
 import os
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
-# --- CONFIGURAÇÃO ÚNICA ---
-MODELO_NVIDIA = "meta-llama/llama-3.3-70b-instruct:free"
+# Modelo 8B é drasticamente mais rápido para testes no plano free
+MODELO_ESTAVEL = "meta-llama/llama-3.1-8b-instant:free"
 
 IDENTIDADE_HYDRALYNX = (
     "Você é a HYDRALYNX, um especialista técnico descontraído. "
@@ -22,35 +22,33 @@ def index():
 def perguntar():
     try:
         chave = os.environ.get("OPENAI_API_KEY")
-        # Configuração do cliente voltada para o OpenRouter
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=chave)
         
         dados = request.get_json()
         pergunta = dados.get('mensagem', '')
 
-        print(f"LOG: Iniciando Stream com NVIDIA Nemotron")
+        print(f"LOG: Processando pergunta com {MODELO_ESTAVEL}")
 
         def generate():
             response = client.chat.completions.create(
-                model=MODELO_NVIDIA,
+                model=MODELO_ESTAVEL,
                 messages=[
                     {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                     {"role": "user", "content": pergunta}
                 ],
                 stream=True,
-                temperature=0.2
+                temperature=0.4
             )
             
             for chunk in response:
                 if chunk.choices[0].delta.content:
-                    # Envia o fragmento de texto em tempo real
                     yield chunk.choices[0].delta.content
 
         return Response(stream_with_context(generate()), mimetype='text/plain')
         
     except Exception as e:
-        print(f"ERRO: {e}")
-        return "Erro na matriz.", 500
+        print(f"ERRO CRÍTICO: {e}")
+        return "Erro na conexão com a matriz.", 500
 
 if __name__ == '__main__':
     app.run(debug=True)
