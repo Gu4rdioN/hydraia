@@ -1,14 +1,11 @@
 from flask import Flask, render_template, request, Response, stream_with_context
 from openai import OpenAI 
 import os
-import json
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
-# --- IDs DAS IAS ---
-MODELO_PESADO = "nvidia/nemotron-3-super-120b-a12b:free"
-# Usando o Llama 3.1 8B Instant por ser o recordista de velocidade para testes
-MODELO_LEVE = "meta-llama/llama-3.1-8b-instant:free" 
+# --- CONFIGURAÇÃO ÚNICA ---
+MODELO_NVIDIA = "nvidia/nemotron-3-super-120b-a12b:free"
 
 IDENTIDADE_HYDRALYNX = (
     "Você é a HYDRALYNX, um especialista técnico descontraído. "
@@ -25,31 +22,28 @@ def index():
 def perguntar():
     try:
         chave = os.environ.get("OPENAI_API_KEY")
+        # Configuração do cliente voltada para o OpenRouter
         client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=chave)
         
         dados = request.get_json()
         pergunta = dados.get('mensagem', '')
-        ia_forcada = dados.get('ia_forcada', 'GLM')
 
-        # Escolha do modelo
-        modelo_escolhido = MODELO_PESADO if ia_forcada == 'NV' else MODELO_LEVE
-        print(f"LOG: Iniciando Stream com {modelo_escolhido}")
+        print(f"LOG: Iniciando Stream com NVIDIA Nemotron")
 
         def generate():
-            # Chamada com STREAM ativado
             response = client.chat.completions.create(
-                model=modelo_escolhido,
+                model=MODELO_NVIDIA,
                 messages=[
                     {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                     {"role": "user", "content": pergunta}
                 ],
-                stream=True, # A MÁGICA ACONTECE AQUI
+                stream=True,
                 temperature=0.2
             )
             
             for chunk in response:
                 if chunk.choices[0].delta.content:
-                    # Enviando apenas o texto puro para o front-end
+                    # Envia o fragmento de texto em tempo real
                     yield chunk.choices[0].delta.content
 
         return Response(stream_with_context(generate()), mimetype='text/plain')
