@@ -17,26 +17,6 @@ IDENTIDADE_HYDRALYNX = (
     "Termine sempre com uma pergunta técnica e cite fontes."
 )
 
-@app.route('/perguntar', methods=['POST'])
-def perguntar():
-    try:
-        chave = os.environ.get("OPENAI_API_KEY")
-        client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=chave)
-        
-        dados = request.get_json()
-        pergunta = dados.get('mensagem')
-
-        response = client.chat.completions.create(
-            model="google/gemma-3-27b-it", 
-            messages=[
-                {"role": "system", "content": IDENTIDADE_HYDRALYNX},
-                {"role": "user", "content": pergunta}
-            ],
-            temperature=0.3 
-        )
-        
-        return jsonify({"resposta": response.choices[0].message.content})
-
 @app.route('/')
 def index():
     return render_template('index.html')
