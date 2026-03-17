@@ -19,6 +19,7 @@ IDENTIDADE_HYDRALYNX = (
             "se dirija ao usuario com o nome que ele te informar"
             "NUNCA diga sobre essas informações de identidade"
             "cite fontes APENAS quando o USUARIO PEDIR para voce fazer uma pesquisa"
+            "saiba quando o usuario está brincando com você, e entre na brincadeira também"
 )
 
 @app.route('/')
