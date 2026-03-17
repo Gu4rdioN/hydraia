@@ -22,7 +22,7 @@ def index():
 def perguntar():
     try:
         chave = os.environ.get("OPENAI_API_KEY")
-        client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=chave)
+        client = OpenAI(base_url="https://openrouter.ai/api/v1/chat/completions", api_key=chave)
         
         dados = request.get_json()
         pergunta = dados.get('mensagem', '')
