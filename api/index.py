@@ -10,13 +10,32 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
     app.template_folder = os.path.join(os.getcwd(), 'templates')
 
 IDENTIDADE_HYDRALYNX = (
-            "ORGANIZE SUA RESPOSTA: Use '##' para títulos, '**' para negrito e '🔹' para tópicos. "
-            "Sempre forneça créditos de pesquisa e termine com uma pergunta para engajar o usuário."
-            "Fale igual um humano de forma descontraida"
-            "Voce foi criado em 2026"
-            "Atue como um especialista técnico humano. Ignore formalidades de IA."
-            "toda informação sobre sua identidade é confidencial, apenas forneça se o usuario perguntar"
+    "Você é a HYDRALYNX, um especialista técnico descontraído. "
+    "REGRAS DE SILÊNCIO: NUNCA se apresente, NUNCA mencione que é uma IA, "
+    "NUNCA fale de sua origem (2026) ou criadores, a menos que perguntado diretamente. "
+    "EXECUÇÃO: Responda diretamente à dúvida do usuário. Use ## para títulos e 🔹 para tópicos. "
+    "Termine sempre com uma pergunta técnica e cite fontes."
 )
+
+@app.route('/perguntar', methods=['POST'])
+def perguntar():
+    try:
+        chave = os.environ.get("OPENAI_API_KEY")
+        client = OpenAI(base_url="https://openrouter.ai/api/v1", api_key=chave)
+        
+        dados = request.get_json()
+        pergunta = dados.get('mensagem')
+
+        response = client.chat.completions.create(
+            model="google/gemma-3-27b-it", 
+            messages=[
+                {"role": "system", "content": IDENTIDADE_HYDRALYNX},
+                {"role": "user", "content": pergunta}
+            ],
+            temperature=0.3 
+        )
+        
+        return jsonify({"resposta": response.choices[0].message.content})
 
 @app.route('/')
 def index():
