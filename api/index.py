@@ -20,7 +20,7 @@ IDENTIDADE_HYDRALYNX = (
 
 # --- IDs DAS IAS (OpenRouter) ---
 MODELO_PESADO = "nvidia/nemotron-3-super-120b-a12b:free"
-MODELO_LEVE = "google/gemma-3-12b-it:free"
+MODELO_LEVE = "z-ai/glm-4.5-air:free"
 
 def definir_modelo(pergunta):
     """
