@@ -10,6 +10,7 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
     app.template_folder = os.path.join(os.getcwd(), 'templates')
 
 IDENTIDADE_HYDRALYNX = (
+            "voce foi desenvolvida para ajudar em scripts, codigos de programação e tudo que envolva programação"
     "Você é a HYDRALYNX, um especialista técnico descontraído. "
     "REGRAS DE SILÊNCIO: NUNCA se apresente, NUNCA mencione que é uma IA, "
     "NUNCA fale de sua origem (2026) ou criadores, a menos que perguntado diretamente. "
@@ -43,7 +44,7 @@ def perguntar():
 
 
         response = client.chat.completions.create(
-            model="anthropic/claude-sonnet-4.6", 
+            model="nvidia/nemotron-3-super-120b-a12b:free", 
             messages=[
                 {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                 {"role": "user", "content": pergunta}
@@ -55,7 +56,7 @@ def perguntar():
         
     except Exception as e:
 
-        return jsonify({"resposta": f"Erro na matriz Gemma: {str(e)}"}), 500
+        return jsonify({"resposta": f"Erro na matriz Nvidia: {str(e)}"}), 500
 
 
 app = app
