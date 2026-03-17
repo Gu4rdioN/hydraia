@@ -4,9 +4,10 @@ import os
 
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
-# --- IDs DAS IAS ---
+# --- IDs DAS IAS (ATUALIZADO) ---
 MODELO_PESADO = "nvidia/nemotron-3-super-120b-a12b:free"
-MODELO_LEVE = "zhipuai/glm-4.5-air:free"
+# Trocamos GLM pelo Gemini 2.0 Flash Lite (Alta Velocidade)
+MODELO_LEVE = "google/gemini-2.0-flash-lite-preview-02-05:free" 
 
 IDENTIDADE_HYDRALYNX = (
     "Você é a HYDRALYNX, um especialista técnico descontraído. "
@@ -27,15 +28,16 @@ def perguntar():
         
         dados = request.get_json()
         pergunta = dados.get('mensagem', '')
-        ia_forcada = dados.get('ia_forcada', 'GLM') # Pega a escolha do botão
+        ia_forcada = dados.get('ia_forcada', 'GLM') # O botão no HTML ainda envia 'GLM', mas o Python usará o Gemini
 
         # --- LÓGICA DE ESCOLHA ---
         if ia_forcada == 'NV':
             modelo_escolhido = MODELO_PESADO
             print("LOG: Usuário forçou NVIDIA SUPER")
         else:
+            # Aqui ele ignora o nome 'GLM' vindo do botão e usa o Gemini configurado acima
             modelo_escolhido = MODELO_LEVE
-            print("LOG: Usuário forçou GLM-4.5-AIR")
+            print("LOG: Usuário forçou GEMINI FLASH LITE")
 
         try:
             response = client.chat.completions.create(
@@ -44,10 +46,11 @@ def perguntar():
                     {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                     {"role": "user", "content": pergunta}
                 ],
-                temperature=0.4
+                temperature=0.4,
+                timeout=20.0 # Define um limite de espera de 20 segundos
             )
-        except Exception:
-            # Fallback automático: se a escolhida falhar, tenta a outra
+        except Exception as e:
+            print(f"ALERTA: Erro no modelo principal: {e}. Tentando reserva...")
             modelo_reserva = MODELO_PESADO if modelo_escolhido == MODELO_LEVE else MODELO_LEVE
             response = client.chat.completions.create(
                 model=modelo_reserva,
@@ -61,6 +64,7 @@ def perguntar():
         })
         
     except Exception as e:
+        print(f"ERRO: {e}")
         return jsonify({"resposta": f"Erro na matriz: {str(e)}"}), 500
 
 if __name__ == '__main__':
