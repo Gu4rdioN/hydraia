@@ -5,7 +5,7 @@ import os
 app = Flask(__name__, template_folder='../templates', static_folder='../static')
 
 # --- CONFIGURAÇÃO ÚNICA ---
-MODELO_NVIDIA = "nvidia/nemotron-3-super-120b-a12b:free"
+MODELO_NVIDIA = "meta-llama/llama-3.3-70b-instruct:free"
 
 IDENTIDADE_HYDRALYNX = (
     "Você é a HYDRALYNX, um especialista técnico descontraído. "
