@@ -115,6 +115,7 @@
 
             if (!texto) return;
 
+            // Mensagem do usuário
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
             userDiv.innerText = texto;
@@ -122,6 +123,7 @@
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
+            // Indicador de "Digitando..."
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = typingId;
@@ -137,28 +139,20 @@
                     body: JSON.stringify({ "mensagem": texto })
                 });
 
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let fullText = "";
-                let aiDiv = null;
+                const data = await response.json();
+                
+                // Remove o indicador de digitando
+                const loader = document.getElementById(typingId);
+                if (loader) loader.remove();
 
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
+                // Cria a div final da IA
+                const aiDiv = document.createElement('div');
+                aiDiv.className = "ai-msg message-bubble";
+                chatScroll.appendChild(aiDiv);
 
-                    const loader = document.getElementById(typingId);
-                    if (loader) loader.remove();
-
-                    if (!aiDiv) {
-                        aiDiv = document.createElement('div');
-                        aiDiv.className = "ai-msg message-bubble";
-                        chatScroll.appendChild(aiDiv);
-                    }
-
-                    fullText += decoder.decode(value, { stream: true });
-                    aiDiv.innerHTML = marked.parse(fullText);
-                    chatScroll.scrollTop = chatScroll.scrollHeight;
-                }
+                // FORMATAÇÃO DO TEXTO (Markdown -> HTML)
+                aiDiv.innerHTML = marked.parse(data.resposta);
+                chatScroll.scrollTop = chatScroll.scrollHeight;
 
             } catch (erro) {
                 console.error("Erro na comunicação:", erro);
@@ -169,7 +163,7 @@
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- Lógica Visual (Inalterada) ---
+        // --- Lógica Visual do Spectrum ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
@@ -202,6 +196,7 @@
         }
         draw();
 
+        // --- Lógica do Logo e Loader ---
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
