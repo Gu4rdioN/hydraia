@@ -39,10 +39,10 @@
 
         /* --- ESTILOS DO SELETOR DE IA --- */
         .ia-selector { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 99px; display: flex; padding: 2px; margin-left: 10px; }
-        .btn-choice { font-size: 8px; font-family: 'Orbitron'; padding: 4px 12px; border-radius: 99px; transition: all 0.3s ease; cursor: pointer; opacity: 0.4; font-weight: bold; }
+        .btn-choice { font-size: 8px; font-family: 'Orbitron'; padding: 4px 12px; border-radius: 99px; transition: all 0.3s ease; cursor: pointer; opacity: 0.4; font-weight: bold; border: none; outline: none; }
         .btn-choice.active { opacity: 1; }
-        .active-nv { background: #76b900; color: #000; box-shadow: 0 0 10px rgba(118, 185, 0, 0.4); }
-        .active-glm { background: #3b82f6; color: #fff; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
+        .active-nv { background: #76b900 !important; color: #000 !important; box-shadow: 0 0 10px rgba(118, 185, 0, 0.4); }
+        .active-glm { background: #3b82f6 !important; color: #fff !important; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
 
         .ai-msg h2 { font-size: 1.25rem; font-weight: bold; color: #3b82f6; margin-top: 10px; margin-bottom: 5px; }
         .ai-msg p { margin-bottom: 8px; }
@@ -126,12 +126,15 @@
     </div>
 
     <script>
-        let iaSelecionada = 'GLM'; // Controle de qual IA usar
+        // Variável GLOBAL para garantir que o enviarMensagem consiga ler
+        window.iaSelecionada = 'GLM'; 
 
         function setIA(tipo) {
-            iaSelecionada = tipo;
+            window.iaSelecionada = tipo;
             const btnGLM = document.getElementById('btn-glm');
             const btnNV = document.getElementById('btn-nv');
+
+            console.log("Alternando IA para:", tipo);
 
             if (tipo === 'GLM') {
                 btnGLM.classList.add('active', 'active-glm');
@@ -149,7 +152,8 @@
 
             if (!texto) return;
 
-            // Interface do Usuário
+            console.log("Enviando requisição com IA:", window.iaSelecionada);
+
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
             userDiv.innerText = texto;
@@ -157,7 +161,6 @@
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
-            // Efeito Digitando
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = typingId;
@@ -172,7 +175,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         "mensagem": texto, 
-                        "ia_forcada": iaSelecionada // Envia escolha do botão para o Python
+                        "ia_forcada": window.iaSelecionada 
                     })
                 });
 
@@ -186,25 +189,24 @@
                 chatScroll.appendChild(aiDiv);
                 chatScroll.scrollTop = chatScroll.scrollHeight;
             } catch (erro) {
+                console.error("Erro na requisição:", erro);
                 const typingEl = document.getElementById(typingId);
                 if (typingEl) typingEl.innerHTML = "ERRO_DE_CONEXÃO";
             }
         }
 
-        // --- Lógica do Canvas e Efeitos Visuais ---
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
+        // Lógica visual do Canvas e Loader (Mantida conforme original)
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
         const colors = [{ h: 0, a: 0.15 }, { h: 30, a: 0.15 }, { h: 60, a: 0.15 }, { h: 140, a: 0.15 }, { h: 200, a: 0.15 }, { h: 270, a: 0.15 }, { h: 320, a: 0.15 }];
         let bands = colors.map((c, i) => ({ ...c, offset: i * 0.8, spd: 0.0006 + (i * 0.0001) }));
-
         function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
         window.addEventListener('mousemove', (e) => { mouse.targetX = e.clientX; mouse.targetY = e.clientY; });
         window.addEventListener('resize', resize);
         resize();
-
         function draw() {
             mouse.x += (mouse.targetX - mouse.x) * 0.05; mouse.y += (mouse.targetY - mouse.y) * 0.05;
             ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'screen';
@@ -225,18 +227,14 @@
             requestAnimationFrame(draw);
         }
         draw();
-
-        // --- Loader e Typing Logo ---
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
         let curTxt = "", isDelPhr = false, curPhrIdx = 0;
-
         window.onload = () => {
             movingLogo.style.left = "50%"; movingLogo.style.top = "50%"; movingLogo.style.transform = "translate(-50%, -50%) scale(2.5)";
             setTimeout(typeInit, 1000);
         };
-
         function typeInit() {
             const target = phrases[0];
             if (curTxt.length < target.length) {
@@ -254,7 +252,6 @@
                 }, 1200);
             }
         }
-
         function loopPhrases() {
             const full = phrases[curPhrIdx];
             curTxt = isDelPhr ? full.substring(0, curTxt.length - 1) : full.substring(0, curTxt.length + 1);
@@ -264,7 +261,6 @@
             else if (isDelPhr && curTxt === "<") { isDelPhr = false; curPhrIdx = (curPhrIdx + 1) % phrases.length; spd = 500; }
             setTimeout(loopPhrases, spd);
         }
-
         const obs = new IntersectionObserver((es) => es.forEach(e => e.isIntersecting && e.target.classList.add('active')), { threshold: 0.1 });
         document.querySelectorAll('.reveal-text').forEach(el => obs.observe(el));
     </script>
