@@ -37,7 +37,7 @@
             animation: fadeIn 0.4s ease forwards;
         }
 
-        /* AJUSTE PARA O MARKDOWN NÃO QUEBRAR O LAYOUT */
+
         .ai-msg h2 { font-size: 1.25rem; font-weight: bold; color: #3b82f6; margin-top: 10px; margin-bottom: 5px; }
         .ai-msg p { margin-bottom: 8px; }
         .ai-msg ul { list-style-type: none; padding-left: 5px; }
@@ -113,7 +113,7 @@
     </div>
 
     <script>
-        // --- LÓGICA DO CHAT CORRIGIDA ---
+
         async function enviarMensagem() {
             const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
@@ -121,7 +121,7 @@
 
             if (!texto) return;
 
-            // 1. Mensagem do Usuário
+
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
             userDiv.innerText = texto;
@@ -130,7 +130,7 @@
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
-            // 2. Criar indicador de digitando
+
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = typingId;
@@ -152,14 +152,14 @@
 
                 const dados = await response.json();
                 
-                // 3. Remover digitando e inserir resposta formatada
+
                 const typingEl = document.getElementById(typingId);
                 if (typingEl) typingEl.remove();
                 
                 const aiDiv = document.createElement('div');
                 aiDiv.className = "ai-msg message-bubble";
                 
-                // A MÁGICA ESTÁ AQUI: marked.parse() transforma Markdown em HTML real
+
                 aiDiv.innerHTML = marked.parse(dados.resposta);
                 
                 chatScroll.appendChild(aiDiv);
@@ -172,7 +172,7 @@
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- CÓDIGO DO CANVAS ---
+
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
@@ -205,7 +205,7 @@
         }
         draw();
 
-        // --- LOADER E TRANSIÇÕES ---
+
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
