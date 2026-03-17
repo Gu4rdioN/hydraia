@@ -11,12 +11,8 @@
         body { background-color: #000000; color: #ffffff; font-family: 'Inter', sans-serif; margin: 0; overflow-x: hidden; user-select: none; }
         
         #spectrum-canvas {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            pointer-events: none;
-            filter: blur(12px);
-            opacity: 0.9;
+            position: fixed; inset: 0; z-index: -1; pointer-events: none;
+            filter: blur(12px); opacity: 0.9;
         }
 
         .chat-container {
@@ -28,26 +24,24 @@
         }
 
         .message-bubble {
-            padding: 12px 18px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            max-width: 85%;
-            font-size: 14px;
-            line-height: 1.5;
+            padding: 12px 18px; border-radius: 15px; margin-bottom: 10px;
+            max-width: 85%; font-size: 14px; line-height: 1.5;
             animation: fadeIn 0.4s ease forwards;
         }
 
-        /* --- ESTILOS DO SELETOR DE IA --- */
+        /* Seletor de IA */
         .ia-selector { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 99px; display: flex; padding: 2px; margin-left: 10px; }
         .btn-choice { font-size: 8px; font-family: 'Orbitron'; padding: 4px 12px; border-radius: 99px; transition: all 0.3s ease; cursor: pointer; opacity: 0.4; font-weight: bold; border: none; outline: none; }
         .btn-choice.active { opacity: 1; }
         .active-nv { background: #76b900 !important; color: #000 !important; box-shadow: 0 0 10px rgba(118, 185, 0, 0.4); }
         .active-glm { background: #3b82f6 !important; color: #fff !important; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
 
-        .ai-msg h2 { font-size: 1.25rem; font-weight: bold; color: #3b82f6; margin-top: 10px; margin-bottom: 5px; }
+        /* Estilização interna do Markdown */
+        .ai-msg h2, .ai-msg h3 { font-size: 1.1rem; font-weight: bold; color: #3b82f6; margin: 10px 0 5px 0; font-family: 'Orbitron'; }
         .ai-msg p { margin-bottom: 8px; }
         .ai-msg ul { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
         .ai-msg strong { color: #fff; font-weight: 700; }
+        .ai-msg code { background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; color: #f87171; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -94,7 +88,6 @@
                 <div class="w-full px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
                     <div class="flex items-center">
                         <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
-                        
                         <div class="ia-selector" id="ia-selector">
                             <button onclick="setIA('GLM')" id="btn-glm" class="btn-choice active-glm active">GLM</button>
                             <button onclick="setIA('NV')" id="btn-nv" class="btn-choice">NV</button>
@@ -148,7 +141,7 @@
 
             if (!texto) return;
 
-            // Interface do Usuário
+            // Renderiza mensagem do usuário
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
             userDiv.innerText = texto;
@@ -156,7 +149,7 @@
             input.value = '';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
-            // Efeito Digitando inicial
+            // Bolha de carregamento
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = typingId;
@@ -175,7 +168,7 @@
                     })
                 });
 
-                // LÓGICA DE STREAMING NO FRONT-END
+                // LÓGICA DE STREAMING (Substituindo o response.json que dava erro)
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = "";
@@ -185,21 +178,19 @@
                     const { done, value } = await reader.read();
                     if (done) break;
 
-                    // Remove o "digitando" assim que o primeiro pedaço de texto chega
-                    if (document.getElementById(typingId)) {
-                        document.getElementById(typingId).remove();
-                    }
+                    // Remove animação de carregamento ao receber o primeiro bit
+                    const loader = document.getElementById(typingId);
+                    if (loader) loader.remove();
 
-                    // Cria a bolha da IA se ainda não existir
+                    // Cria a bolha da IA se ainda não existir para este bloco
                     if (!aiDiv) {
                         aiDiv = document.createElement('div');
                         aiDiv.className = "ai-msg message-bubble";
                         chatScroll.appendChild(aiDiv);
                     }
 
-                    // Decodifica o pedaço de texto e adiciona ao conteúdo
-                    const chunk = decoder.decode(value, { stream: true });
-                    fullText += chunk;
+                    // Decodifica e acumula o texto
+                    fullText += decoder.decode(value, { stream: true });
                     
                     // Renderiza o Markdown em tempo real
                     aiDiv.innerHTML = marked.parse(fullText);
@@ -207,25 +198,26 @@
                 }
 
             } catch (erro) {
-                console.error("Erro na matriz:", erro);
-                if (document.getElementById(typingId)) {
-                    document.getElementById(typingId).innerHTML = "ERRO_DE_CONEXÃO";
-                }
+                console.error("Erro na comunicação:", erro);
+                const loader = document.getElementById(typingId);
+                if (loader) loader.innerHTML = "STATUS: CONNECTION_LOST";
             }
         }
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- Resto da lógica visual (Canvas/Logo) mantida ---
+        // --- Lógica Visual (Canvas e Logo) ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
         const colors = [{ h: 0, a: 0.15 }, { h: 30, a: 0.15 }, { h: 60, a: 0.15 }, { h: 140, a: 0.15 }, { h: 200, a: 0.15 }, { h: 270, a: 0.15 }, { h: 320, a: 0.15 }];
         let bands = colors.map((c, i) => ({ ...c, offset: i * 0.8, spd: 0.0006 + (i * 0.0001) }));
+        
         function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
         window.addEventListener('mousemove', (e) => { mouse.targetX = e.clientX; mouse.targetY = e.clientY; });
         window.addEventListener('resize', resize);
         resize();
+
         function draw() {
             mouse.x += (mouse.targetX - mouse.x) * 0.05; mouse.y += (mouse.targetY - mouse.y) * 0.05;
             ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'screen';
@@ -246,14 +238,17 @@
             requestAnimationFrame(draw);
         }
         draw();
+
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
         let curTxt = "", isDelPhr = false, curPhrIdx = 0;
+
         window.onload = () => {
             movingLogo.style.left = "50%"; movingLogo.style.top = "50%"; movingLogo.style.transform = "translate(-50%, -50%) scale(2.5)";
             setTimeout(typeInit, 1000);
         };
+
         function typeInit() {
             const target = phrases[0];
             if (curTxt.length < target.length) {
@@ -271,6 +266,7 @@
                 }, 1200);
             }
         }
+
         function loopPhrases() {
             const full = phrases[curPhrIdx];
             curTxt = isDelPhr ? full.substring(0, curTxt.length - 1) : full.substring(0, curTxt.length + 1);
@@ -280,6 +276,7 @@
             else if (isDelPhr && curTxt === "<") { isDelPhr = false; curPhrIdx = (curPhrIdx + 1) % phrases.length; spd = 500; }
             setTimeout(loopPhrases, spd);
         }
+
         const obs = new IntersectionObserver((es) => es.forEach(e => e.isIntersecting && e.target.classList.add('active')), { threshold: 0.1 });
         document.querySelectorAll('.reveal-text').forEach(el => obs.observe(el));
     </script>
