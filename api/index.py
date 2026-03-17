@@ -38,7 +38,7 @@ def perguntar():
         # MODELO GEMMA 3 (Versão Gratuita)
         # O sufixo :free garante que você não gaste nada
         response = client.chat.completions.create(
-            model="meta-llama/llama-3.2-3b-instruct:free", 
+            model="google/gemini-2.0-flash-thinking-exp:free", 
             messages=[
                 {"role": "system", "content": IDENTIDADE_HYDRALYNX},
                 {"role": "user", "content": pergunta}
