@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hydralynx AI</title>
+    <title>Hydralynx AI | NVIDIA Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -29,26 +29,19 @@
             animation: fadeIn 0.4s ease forwards;
         }
 
-        /* Seletor de IA */
-        .ia-selector { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 99px; display: flex; padding: 2px; margin-left: 10px; }
-        .btn-choice { font-size: 8px; font-family: 'Orbitron'; padding: 4px 12px; border-radius: 99px; transition: all 0.3s ease; cursor: pointer; opacity: 0.4; font-weight: bold; border: none; outline: none; }
-        .btn-choice.active { opacity: 1; }
-        .active-nv { background: #76b900 !important; color: #000 !important; box-shadow: 0 0 10px rgba(118, 185, 0, 0.4); }
-        .active-glm { background: #3b82f6 !important; color: #fff !important; box-shadow: 0 0 10px rgba(59, 130, 246, 0.4); }
-
-        /* Estilização interna do Markdown */
-        .ai-msg h2, .ai-msg h3 { font-size: 1.1rem; font-weight: bold; color: #3b82f6; margin: 10px 0 5px 0; font-family: 'Orbitron'; }
+        /* Estilização interna do Markdown - Temática NVIDIA (Verde) */
+        .ai-msg h2, .ai-msg h3 { font-size: 1.1rem; font-weight: bold; color: #76b900; margin: 10px 0 5px 0; font-family: 'Orbitron'; }
         .ai-msg p { margin-bottom: 8px; }
         .ai-msg ul { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
         .ai-msg strong { color: #fff; font-weight: 700; }
-        .ai-msg code { background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; color: #f87171; }
+        .ai-msg code { background: rgba(118, 185, 0, 0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; color: #76b900; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .user-msg { background: rgba(255, 255, 255, 0.1); align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai-msg { border: 1px solid rgba(59, 130, 246, 0.3); align-self: flex-start; border-bottom-left-radius: 2px; color: #e2e8f0; }
+        .ai-msg { border: 1px solid rgba(118, 185, 0, 0.3); align-self: flex-start; border-bottom-left-radius: 2px; color: #e2e8f0; }
 
-        .typing-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        .typing-dot { width: 6px; height: 6px; background: #76b900; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
         .typing-dot:nth-child(2) { animation-delay: 0.2s; }
         .typing-dot:nth-child(3) { animation-delay: 0.4s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
@@ -75,39 +68,35 @@
 
     <div id="main-content">
         <nav class="fixed top-0 left-0 w-full z-50 flex justify-end p-8">
-            <a href="#" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors">API_STATUS: ONLINE</a>
+            <a href="#" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 hover:text-white transition-colors">API_STATUS: NVIDIA_ONLINE</a>
         </nav>
 
         <section class="min-h-screen flex flex-col items-center justify-center p-4">
             <div class="reveal-text text-center mb-6">
-                <p class="font-orbitron text-blue-400 tracking-[0.5em] text-[10px] mb-2 uppercase">Interface Neural</p>
-                <h2 class="text-3xl font-bold font-orbitron tracking-tighter">HYDRALYNX <span class="text-gray-600">AI</span></h2>
+                <p class="font-orbitron text-[#76b900] tracking-[0.5em] text-[10px] mb-2 uppercase">Neural Core Powered</p>
+                <h2 class="text-3xl font-bold font-orbitron tracking-tighter">HYDRALYNX <span class="text-gray-600">NVIDIA</span></h2>
             </div>
 
             <div class="reveal-text chat-container w-full max-w-3xl h-[65vh] flex flex-col overflow-hidden relative">
                 <div class="w-full px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
                     <div class="flex items-center">
-                        <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
-                        <div class="ia-selector" id="ia-selector">
-                            <button onclick="setIA('GLM')" id="btn-glm" class="btn-choice active-glm active">GLM</button>
-                            <button onclick="setIA('NV')" id="btn-nv" class="btn-choice">NV</button>
-                        </div>
+                        <span class="text-[9px] font-orbitron tracking-[0.3em] text-[#76b900] animate-pulse">● CORE_STABLE</span>
                     </div>
-                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-gray-500">ENCRYPTED_CONNECTION</span>
+                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-gray-500">NVIDIA NEMOTRON 120B</span>
                 </div>
 
                 <div id="chat-scroll" class="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
                     <div class="ai-msg message-bubble">
-                        Sistemas inicializados. Sou a inteligência da Hydralynx. Como posso atuar no seu projeto hoje?
+                        Sistemas estabilizados com tecnologia NVIDIA. Sou a Hydralynx. Qual o nome do mestre da sessão de hoje?
                     </div>
                 </div>
                 
                 <div class="p-4 bg-black/40 border-t border-white/5">
                     <div class="relative flex items-center">
                         <input type="text" id="user-input" 
-                            class="w-full bg-white/5 border border-white/10 rounded-full py-4 px-6 pr-16 focus:outline-none focus:border-blue-500/50 transition-all font-light text-sm text-white"
+                            class="w-full bg-white/5 border border-white/10 rounded-full py-4 px-6 pr-16 focus:outline-none focus:border-[#76b900]/50 transition-all font-light text-sm text-white"
                             placeholder="Envie um comando ou mensagem...">
-                        <button onclick="enviarMensagem()" class="absolute right-2 p-3 bg-white text-black rounded-full hover:scale-105 active:scale-95 transition-all">
+                        <button onclick="enviarMensagem()" class="absolute right-2 p-3 bg-[#76b900] text-black rounded-full hover:scale-105 active:scale-95 transition-all">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
                             </svg>
@@ -119,21 +108,7 @@
     </div>
 
     <script>
-        window.iaSelecionada = 'GLM'; 
-
-        function setIA(tipo) {
-            window.iaSelecionada = tipo;
-            const btnGLM = document.getElementById('btn-glm');
-            const btnNV = document.getElementById('btn-nv');
-            if (tipo === 'GLM') {
-                btnGLM.classList.add('active', 'active-glm');
-                btnNV.classList.remove('active', 'active-nv');
-            } else {
-                btnNV.classList.add('active', 'active-nv');
-                btnGLM.classList.remove('active', 'active-glm');
-            }
-        }
-
+        // Lógica simplificada: Apenas um modelo agora
         async function enviarMensagem() {
             const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
@@ -162,13 +137,9 @@
                 const response = await fetch('/perguntar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        "mensagem": texto, 
-                        "ia_forcada": window.iaSelecionada 
-                    })
+                    body: JSON.stringify({ "mensagem": texto }) // Enviando apenas a mensagem
                 });
 
-                // LÓGICA DE STREAMING (Substituindo o response.json que dava erro)
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
                 let fullText = "";
@@ -178,21 +149,16 @@
                     const { done, value } = await reader.read();
                     if (done) break;
 
-                    // Remove animação de carregamento ao receber o primeiro bit
                     const loader = document.getElementById(typingId);
                     if (loader) loader.remove();
 
-                    // Cria a bolha da IA se ainda não existir para este bloco
                     if (!aiDiv) {
                         aiDiv = document.createElement('div');
                         aiDiv.className = "ai-msg message-bubble";
                         chatScroll.appendChild(aiDiv);
                     }
 
-                    // Decodifica e acumula o texto
                     fullText += decoder.decode(value, { stream: true });
-                    
-                    // Renderiza o Markdown em tempo real
                     aiDiv.innerHTML = marked.parse(fullText);
                     chatScroll.scrollTop = chatScroll.scrollHeight;
                 }
@@ -206,11 +172,12 @@
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- Lógica Visual (Canvas e Logo) ---
+        // --- Efeitos Visuais (Inalterados, apenas cores ajustadas no CSS) ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
-        const colors = [{ h: 0, a: 0.15 }, { h: 30, a: 0.15 }, { h: 60, a: 0.15 }, { h: 140, a: 0.15 }, { h: 200, a: 0.15 }, { h: 270, a: 0.15 }, { h: 320, a: 0.15 }];
+        // Cores baseadas no verde NVIDIA
+        const colors = [{ h: 80, a: 0.15 }, { h: 90, a: 0.15 }, { h: 100, a: 0.15 }, { h: 110, a: 0.15 }, { h: 120, a: 0.15 }];
         let bands = colors.map((c, i) => ({ ...c, offset: i * 0.8, spd: 0.0006 + (i * 0.0001) }));
         
         function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
@@ -239,9 +206,10 @@
         }
         draw();
 
+        // Logo Typing Effect
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
-        const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
+        const phrases = ["<HYDRALYNX", "<NVIDIA_POWER", "<NEURAL_NET"];
         let curTxt = "", isDelPhr = false, curPhrIdx = 0;
 
         window.onload = () => {
