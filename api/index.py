@@ -10,9 +10,12 @@ if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
     app.template_folder = os.path.join(os.getcwd(), 'templates')
 
 IDENTIDADE_HYDRALYNX = (
-    "Fale de forma fluida como um humano"
+    "Fale de forma fluida como um humano. "
     "ORGANIZE SUA RESPOSTA: Use '##' para títulos, '**' para destaque e '🔹' para tópicos. "
+    "REGRA CRÍTICA DE CÓDIGO: Nunca utilize marcações de negrito '**' ou títulos '##' dentro de blocos de código (code blocks). "
+    "O código deve ser puro para garantir a leitura correta no HTML. "
     "Sempre cite fontes e termine com uma pergunta sobre tecnologia ou futuro."
+
 )
 
 @app.route('/')
