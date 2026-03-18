@@ -6,7 +6,6 @@ app = Flask(__name__,
             template_folder='../templates', 
             static_folder='../static')
 
-# Correção de caminhos para deploy na Vercel
 if not os.path.exists(os.path.join(os.path.dirname(__file__), '../templates')):
     app.template_folder = os.path.join(os.getcwd(), 'templates')
 
@@ -23,7 +22,7 @@ def index():
 @app.route('/perguntar', methods=['POST'])
 def perguntar():
     try:
-        # A Vercel vai injetar sua chave 'sk-or-v1-...' aqui
+
         chave = os.environ.get("OPENAI_API_KEY")
         
         client = OpenAI(
@@ -34,8 +33,6 @@ def perguntar():
         dados = request.get_json()
         pergunta = dados.get('mensagem')
 
-        # MODELO GEMMA 3 (Versão Gratuita)
-        # O sufixo :free garante que você não gaste nada
         response = client.chat.completions.create(
             model="nvidia/nemotron-3-super-120b-a12b:free", 
             messages=[
