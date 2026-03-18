@@ -23,7 +23,12 @@ o arquivo templates/index.html utilizado no site também está disponivel, voce 
 por ser uma IA pesada (120bilhões) ela é um pouco lenta para responder, porém a resposta é profunda e certeira, diferente de modelos 12b, 6b, 2b... que priorizam velocidade
 
 resumo doque foi utilizado no chatbot:
+
 openrouter (openrouter.ai) para geração da key
+
 vercel (vercel.com) para hospedagem do site
+
 Nvidia Nemotron 3 Super 120b (API da IA Nvidia)
+
 bibliotecas flask e openai
+
