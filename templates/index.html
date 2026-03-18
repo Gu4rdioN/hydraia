@@ -126,6 +126,9 @@
     </div>
 
     <script>
+        // Variável para armazenar o título original
+        const originalTitle = document.title;
+
         async function enviarMensagem() {
             const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
@@ -166,6 +169,18 @@
                 aiDiv.innerHTML = marked.parse(data.resposta);
                 chatScroll.scrollTop = chatScroll.scrollHeight;
 
+                // --- NOVO: Lógica de mudar o nome da aba ---
+                document.title = "Uma nova mensagem";
+                
+                // Retorna ao título original quando o usuário focar ou clicar na página
+                const handleFocus = () => {
+                    document.title = originalTitle;
+                    window.removeEventListener('focus', handleFocus);
+                    window.removeEventListener('mousedown', handleFocus);
+                };
+                window.addEventListener('focus', handleFocus);
+                window.addEventListener('mousedown', handleFocus);
+
             } catch (erro) {
                 console.error("Erro na comunicação:", erro);
                 const loader = document.getElementById(typingId);
@@ -175,7 +190,7 @@
 
         document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
 
-        // --- Lógica Visual do Spectrum ---
+        // --- Lógica Visual do Spectrum (MANTIDA) ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
         let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
@@ -208,7 +223,7 @@
         }
         draw();
 
-        // --- Lógica do Logo e Loader ---
+        // --- Lógica do Logo e Loader (MANTIDA) ---
         const typeTarget = document.getElementById('type-target');
         const movingLogo = document.getElementById('moving-logo');
         const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
