@@ -3,121 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hydralynx AI</title>
+    <title>Hydralynx AI | Code Analysis</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
 
+    <style>
         body { 
-            background-color: #000000; 
-            color: #ffffff; 
-            font-family: 'Inter', sans-serif; 
-            margin: 0; 
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-            position: fixed;
+            background-color: #000000; color: #ffffff; font-family: 'Inter', sans-serif; 
+            margin: 0; overflow: hidden; height: 100%; width: 100%; position: fixed; 
         }
         
-        #spectrum-canvas {
-            position: fixed; inset: 0; z-index: -1; pointer-events: none;
-            filter: blur(12px); opacity: 0.9;
-        }
+        #spectrum-canvas { position: fixed; inset: 0; z-index: -1; filter: blur(15px); opacity: 0.8; pointer-events: none; }
 
         .chat-container {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(25px);
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
+            border-radius: 12px;
+            display: flex; flex-direction: column;
         }
 
+        /* Estilo CMD para as mensagens */
         .message-bubble {
-            padding: 12px 18px; border-radius: 15px; margin-bottom: 10px;
-            max-width: 85%; font-size: 14px; line-height: 1.5;
-            animation: fadeIn 0.4s ease forwards;
-            word-wrap: break-word;
+            padding: 15px; margin-bottom: 12px;
+            max-width: 95%; font-size: 13px; line-height: 1.6;
+            animation: fadeIn 0.3s ease forwards;
+            font-family: 'Fira Code', monospace;
         }
 
-        .ai-msg h2, .ai-msg h3 { font-size: 1.1rem; font-weight: bold; color: #3b82f6; margin: 10px 0 5px 0; font-family: 'Orbitron'; }
-        .ai-msg p { margin-bottom: 8px; }
-        .ai-msg ul { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
-        .ai-msg strong { color: #fff; font-weight: 700; }
-        .ai-msg code { background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px; font-family: monospace; color: #f87171; }
+        .ai-msg { border-left: 3px solid #3b82f6; background: rgba(59, 130, 246, 0.05); color: #d1d5db; }
+        .user-msg { border-left: 3px solid #6b7280; background: rgba(255, 255, 255, 0.05); align-self: flex-start; width: 100%; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .user-msg { background: rgba(255, 255, 255, 0.1); align-self: flex-end; border-bottom-right-radius: 2px; }
-        .ai-msg { border: 1px solid rgba(59, 130, 246, 0.3); align-self: flex-start; border-bottom-left-radius: 2px; color: #e2e8f0; }
-
-        .typing-dot { width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-
-
-        #chat-scroll {
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+        /* Customização do Code Highlight dentro do chat */
+        pre[class*="language-"] { 
+            background: #0d0d0d !important; 
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; margin: 15px 0; 
         }
+
+        /* Textarea expansível */
+        #user-input {
+            scrollbar-width: thin;
+            scrollbar-color: #3b82f6 transparent;
+            resize: none;
+            min-height: 50px;
+            max-height: 200px;
+        }
+
+        #chat-scroll { overflow-y: auto; scroll-behavior: smooth; }
         #chat-scroll::-webkit-scrollbar { width: 4px; }
-        #chat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        #chat-scroll::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.5); border-radius: 10px; }
 
         .font-orbitron { font-family: 'Orbitron', sans-serif; }
-        .reveal-text { opacity: 0; transform: translateY(40px); filter: blur(12px); transition: all 1.4s cubic-bezier(0.22, 1, 0.36, 1); }
-        .reveal-text.active { opacity: 1; transform: translateY(0); filter: blur(0); }
-        .blink-under { animation: blink-cursor 1s infinite; }
-        @keyframes blink-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .typing-dot { width: 4px; height: 4px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
         
         #loader { position: fixed; inset: 0; background: #000; z-index: 100; display: flex; align-items: center; justify-content: center; }
-        #moving-logo { position: fixed; z-index: 110; font-family: 'Orbitron'; font-weight: 900; pointer-events: none; text-transform: uppercase; }
-        #main-content { opacity: 0; transition: opacity 1.5s ease; height: 100vh; display: flex; flex-direction: column; }
+        #moving-logo { position: fixed; z-index: 110; font-family: 'Orbitron'; font-weight: 900; pointer-events: none; }
     </style>
 </head>
 <body class="antialiased">
 
     <canvas id="spectrum-canvas"></canvas>
-    <div id="moving-logo"><span id="type-target"></span><span class="blink-under">|</span></div>
+    <div id="moving-logo"><span id="type-target"></span><span class="animate-pulse">|</span></div>
     <div id="loader"></div>
 
-    <div id="main-content">
-        <nav class="fixed top-0 left-0 w-full z-50 flex justify-end p-6 md:p-8 pointer-events-none">
-            <a href="#" class="text-[10px] font-bold tracking-[0.3em] uppercase text-gray-400 pointer-events-auto hover:text-white transition-colors">API_STATUS: ONLINE</a>
+    <div id="main-content" class="opacity-0 transition-opacity duration-1000 flex flex-col h-screen">
+        <nav class="p-6 flex justify-between items-center">
+            <div class="font-orbitron text-xs tracking-widest text-blue-500">HYDRALYNX // CORE_V2</div>
+            <div class="text-[9px] font-bold text-gray-500">STATUS: ANALYZER_READY</div>
         </nav>
 
-        <section class="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden">
-            <div class="reveal-text text-center mb-6 mt-12 md:mt-0">
-                <p class="font-orbitron text-blue-400 tracking-[0.5em] text-[10px] mb-2 uppercase">Interface Neural</p>
-                <h2 class="text-3xl font-bold font-orbitron tracking-tighter">HYDRALYNX <span class="text-gray-600">AI</span></h2>
-            </div>
-
-            <div class="reveal-text chat-container w-full max-w-3xl h-[70vh] md:h-[65vh] relative">
-                <div class="w-full px-6 py-3 border-b border-white/10 flex justify-between items-center bg-white/5">
-                    <div class="flex items-center">
-                        <span class="text-[9px] font-orbitron tracking-[0.3em] text-blue-400 animate-pulse">● SYSTEM_ACTIVE</span>
+        <section class="flex-1 flex flex-col items-center justify-center p-4 overflow-hidden mb-4">
+            <div class="chat-container w-full max-w-4xl h-[80vh] relative shadow-2xl">
+                <div class="w-full px-4 py-2 border-b border-white/10 flex items-center gap-2 bg-white/5">
+                    <div class="flex gap-1.5">
+                        <div class="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+                        <div class="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
                     </div>
-                    <span class="text-[9px] font-orbitron tracking-[0.3em] text-gray-500 hidden sm:block">ENCRYPTED_CONNECTION</span>
+                    <span class="text-[10px] font-mono text-gray-400 ml-4">hydra_terminal --analyze_mode</span>
                 </div>
 
                 <div id="chat-scroll" class="flex-1 p-6 flex flex-col gap-4">
                     <div class="ai-msg message-bubble">
-                        Sistemas inicializados. Sou a inteligência da Hydralynx. Como posso atuar no seu projeto hoje?
+                        > Módulo de Análise Neural Ativo.<br>
+                        > Insira seu código abaixo para avaliação de performance, bugs e melhorias.<br>
+                        > Utilize <span class="text-blue-400">Shift+Enter</span> para quebrar linhas.
                     </div>
                 </div>
                 
-                <div class="p-4 bg-black/40 border-t border-white/5">
-                    <div class="relative flex items-center">
-                        <input type="text" id="user-input" 
-                            class="w-full bg-white/5 border border-white/10 rounded-full py-4 px-6 pr-16 focus:outline-none focus:border-blue-500/50 transition-all font-light text-sm text-white"
-                            placeholder="Envie um comando ou mensagem...">
-                        <button onclick="enviarMensagem()" class="absolute right-2 p-3 bg-white text-black rounded-full hover:scale-105 active:scale-95 transition-all">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5 12 3m0 0 7.5 7.5M12 3v18" />
-                            </svg>
-                        </button>
+                <div class="p-4 bg-black/60 border-t border-white/10">
+                    <div class="relative flex flex-col gap-2">
+                        <textarea id="user-input" 
+                            class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-6 focus:outline-none focus:border-blue-500/50 transition-all font-mono text-sm text-gray-300"
+                            placeholder="Cole seu código aqui... (Shift+Enter para nova linha)"></textarea>
+                        
+                        <div class="flex justify-end items-center gap-4">
+                            <span class="text-[9px] text-gray-500 font-mono">CMD + ENTER TO SEND</span>
+                            <button onclick="enviarMensagem()" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2">
+                                ANALYZER_RUN 
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-3 h-3">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -125,25 +122,44 @@
     </div>
 
     <script>
+        // Lógica de Shift+Enter e Envio
+        const input = document.getElementById('user-input');
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                enviarMensagem();
+            }
+        });
+
+        // Auto-resize do textarea
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
         async function enviarMensagem() {
-            const input = document.getElementById('user-input');
             const chatScroll = document.getElementById('chat-scroll');
             const texto = input.value.trim();
 
             if (!texto) return;
 
+            // Interface do Usuário (Estilo Código)
             const userDiv = document.createElement('div');
             userDiv.className = "user-msg message-bubble";
-            userDiv.innerText = texto;
+            // Escapar HTML para evitar execução de script e manter formatação de código
+            userDiv.innerHTML = `<div class="text-blue-400 mb-1">$ USER_INPUT:</div><pre><code>${texto.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
             chatScroll.appendChild(userDiv);
+            
             input.value = '';
+            input.style.height = 'auto';
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
+            // Loader IA
             const typingId = "typing-" + Date.now();
             const typingDiv = document.createElement('div');
             typingDiv.id = typingId;
-            typingDiv.className = "ai-msg message-bubble flex items-center gap-1";
-            typingDiv.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+            typingDiv.className = "ai-msg message-bubble flex items-center gap-2";
+            typingDiv.innerHTML = `> ANALYZING_CODE <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
             chatScroll.appendChild(typingDiv);
             chatScroll.scrollTop = chatScroll.scrollHeight;
 
@@ -151,101 +167,77 @@
                 const response = await fetch('/perguntar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ "mensagem": texto })
+                    body: JSON.stringify({ "mensagem": "Analise este código, aponte erros e melhorias:\n" + texto })
                 });
 
                 const data = await response.json();
-                const loader = document.getElementById(typingId);
-                if (loader) loader.remove();
+                document.getElementById(typingId).remove();
 
                 const aiDiv = document.createElement('div');
                 aiDiv.className = "ai-msg message-bubble";
                 chatScroll.appendChild(aiDiv);
 
+                // Renderiza Markdown e depois aplica Prism Highlight
                 aiDiv.innerHTML = marked.parse(data.resposta);
+                Prism.highlightAllUnder(aiDiv);
+                
                 chatScroll.scrollTop = chatScroll.scrollHeight;
 
             } catch (erro) {
-                console.error("Erro na comunicação:", erro);
-                const loader = document.getElementById(typingId);
-                if (loader) loader.innerHTML = "STATUS: CONNECTION_LOST";
+                document.getElementById(typingId).innerHTML = "> ERROR: CRITICAL_CONNECTION_FAILURE";
             }
         }
 
-        document.getElementById('user-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') enviarMensagem(); });
-
+        // --- Lógica de Animação Spectrum (Simplificada para Performance) ---
         const canvas = document.getElementById('spectrum-canvas');
         const ctx = canvas.getContext('2d');
-        let w, h, mouse = { x: -1000, y: -1000, targetX: -1000, targetY: -1000 };
-        const colors = [{ h: 0, a: 0.15 }, { h: 30, a: 0.15 }, { h: 60, a: 0.15 }, { h: 140, a: 0.15 }, { h: 200, a: 0.15 }, { h: 270, a: 0.15 }, { h: 320, a: 0.15 }];
-        let bands = colors.map((c, i) => ({ ...c, offset: i * 0.8, spd: 0.0006 + (i * 0.0001) }));
-        
+        let w, h;
         function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
-        window.addEventListener('mousemove', (e) => { mouse.targetX = e.clientX; mouse.targetY = e.clientY; });
         window.addEventListener('resize', resize);
         resize();
 
         function draw() {
-            mouse.x += (mouse.targetX - mouse.x) * 0.05; mouse.y += (mouse.targetY - mouse.y) * 0.05;
-            ctx.clearRect(0, 0, w, h); ctx.globalCompositeOperation = 'screen';
-            const time = Date.now();
-            bands.forEach((band, i) => {
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(0,0,w,h);
+            const time = Date.now() * 0.001;
+            for(let i=0; i<5; i++) {
                 ctx.beginPath();
-                for (let x = -100; x <= w + 100; x += 8) {
-                    const diagBase = (x / w) * h; const expand = (x / w) * 2.8;
-                    const wave = Math.sin((time * band.spd) + (x * 0.001) + band.offset);
-                    let y = diagBase + (wave * (110 * expand));
-                    const dx = x - mouse.x; const dy = y - mouse.y; const dist = Math.sqrt(dx*dx + dy*dy);
-                    if (dist < 400) { const force = Math.pow(1 - dist / 400, 2); y += (dy / dist) * (force * 90); }
-                    if (x === -100) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+                ctx.strokeStyle = `hsla(${200 + i*20}, 70%, 50%, 0.2)`;
+                ctx.lineWidth = 2;
+                for(let x=0; x<w; x+=10) {
+                    const y = h/2 + Math.sin(x*0.005 + time + i) * 100;
+                    if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
                 }
-                ctx.strokeStyle = `hsla(${band.h}, 90%, 50%, ${band.a})`;
-                ctx.lineWidth = 45 + (i * 10); ctx.lineCap = "round"; ctx.stroke();
-            });
+                ctx.stroke();
+            }
             requestAnimationFrame(draw);
         }
         draw();
 
+        // --- Loader Inicial ---
         const typeTarget = document.getElementById('type-target');
-        const movingLogo = document.getElementById('moving-logo');
-        const phrases = ["<HYDRALYNX", "<CODE", "<DESIGN"];
-        let curTxt = "", isDelPhr = false, curPhrIdx = 0;
+        const phrases = ["<HYDRALYNX_AI", "<CODE_ANALYZER", "<SYSTEM_READY"];
+        let pIdx = 0, charIdx = 0;
 
-        window.onload = () => {
-            movingLogo.style.left = "50%"; movingLogo.style.top = "50%"; movingLogo.style.transform = "translate(-50%, -50%) scale(2.5)";
-            setTimeout(typeInit, 1000);
-        };
-
-        function typeInit() {
-            const target = phrases[0];
-            if (curTxt.length < target.length) {
-                curTxt = target.substring(0, curTxt.length + 1);
-                typeTarget.innerText = curTxt;
-                setTimeout(typeInit, 100);
+        function type() {
+            if(charIdx < phrases[pIdx].length) {
+                typeTarget.innerText += phrases[pIdx][charIdx];
+                charIdx++;
+                setTimeout(type, 100);
             } else {
-                movingLogo.style.transition = "all 1.5s cubic-bezier(0.85, 0, 0.15, 1)";
-                movingLogo.style.left = "2rem"; movingLogo.style.top = "2rem"; movingLogo.style.transform = "scale(1)";
-                document.getElementById('loader').style.opacity = "0";
-                document.getElementById('main-content').style.opacity = "1";
                 setTimeout(() => {
-                    document.getElementById('loader').style.display = "none";
-                    loopPhrases();
-                }, 1200);
+                    if(pIdx === 0) {
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('main-content').classList.remove('opacity-0');
+                    }
+                    charIdx = 0;
+                    pIdx = (pIdx + 1) % phrases.length;
+                    typeTarget.innerText = "";
+                    type();
+                }, 2000);
             }
         }
-
-        function loopPhrases() {
-            const full = phrases[curPhrIdx];
-            curTxt = isDelPhr ? full.substring(0, curTxt.length - 1) : full.substring(0, curTxt.length + 1);
-            typeTarget.innerText = curTxt;
-            let spd = isDelPhr ? 50 : 150;
-            if (!isDelPhr && curTxt === full) { spd = 2000; isDelPhr = true; }
-            else if (isDelPhr && curTxt === "<") { isDelPhr = false; curPhrIdx = (curPhrIdx + 1) % phrases.length; spd = 500; }
-            setTimeout(loopPhrases, spd);
-        }
-
-        const obs = new IntersectionObserver((es) => es.forEach(e => e.isIntersecting && e.target.classList.add('active')), { threshold: 0.1 });
-        document.querySelectorAll('.reveal-text').forEach(el => obs.observe(el));
+        window.onload = type;
     </script>
 </body>
 </html>
