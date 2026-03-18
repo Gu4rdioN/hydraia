@@ -28,6 +28,9 @@ openrouter (openrouter.ai) para geração da key
 
 vercel (vercel.com) para hospedagem do site
 
+
+o site que foi desenvolvido com esse mesmo codigo estara disponivel nesse endereço:
+https://hydraia.vercel.app/
 Nvidia Nemotron 3 Super 120b (API da IA Nvidia)
 
 bibliotecas flask e openai
